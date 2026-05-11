@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>StrikeCipheeSVA</title>
+    <style>
+        * { box-sizing: border-box; user-select: text; }
+        :root {
+            --bg-body: #1e1f2c; --bg-container: #2a2b38; --bg-card: #1e1f2c; --bg-input: #0f0f1a;
+            --text-primary: #e4e4e7; --text-secondary: #a1a1aa; --border-color: #3f4156;
+            --btn-bg: #3b3f5c; --btn-danger: #7f1a1a; --status-bg: #0f0f1a; --header-bg: #1e1f2c;
+            --warning-color: #e74c3c; --vk-key-bg: #2a2a3a; --vk-key-hover: #4a4a6a;
+        }
+        .light-theme {
+            --bg-body: #f0f0f5; --bg-container: #ffffff; --bg-card: #f8f8fc; --bg-input: #ffffff;
+            --text-primary: #1a1a2e; --text-secondary: #555566; --border-color: #d0d0dd;
+            --btn-bg: #5a5a7a; --btn-danger: #c0392b; --status-bg: #eeeeee; --header-bg: #e8e8f0;
+            --warning-color: #c0392b; --vk-key-bg: #e0e0e8; --vk-key-hover: #c0c0d0;
+        }
+        body {
+            font-family: system-ui, 'Segoe UI', 'Courier New', monospace;
+            background: var(--bg-body); margin: 0; padding: 20px; color: var(--text-primary);
+        }
+        .app-container {
+            max-width: 1400px; margin: 0 auto; background: var(--bg-container);
+            border-radius: 24px; box-shadow: 0 12px 30px rgba(0,0,0,0.5); overflow: hidden;
+        }
+        .header {
+            display: flex; justify-content: space-between; padding: 10px 20px;
+            background: var(--header-bg); border-bottom: 1px solid var(--border-color);
+        }
+        .header-right { display: flex; gap: 10px; align-items: center; }
+        .lang-select, .theme-btn {
+            background: var(--bg-container); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 6px 12px; color: var(--text-primary); cursor: pointer;
+        }
+        .theme-btn { font-size: 1.1rem; line-height: 1; }
+        .content { padding: 20px; }
+        .card {
+            background: var(--bg-card); border-radius: 20px; padding: 18px;
+            margin-bottom: 24px; border: 1px solid var(--border-color);
+        }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+        label { font-weight: 500; min-width: 100px; }
+        input, select, textarea {
+            background: var(--bg-input); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 8px 12px; color: var(--text-primary);
+            font-size: 0.9rem; font-family: inherit;
+            max-width: 100%;
+            word-break: break-all;
+        }
+        select {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+        select option {
+            word-break: break-all;
+            white-space: normal;
+        }
+        textarea { font-family: 'Courier New', monospace; resize: vertical; }
+        .masked-textarea {
+            -webkit-text-security: disc;
+            text-security: disc;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        .masked-textarea.reveal {
+            -webkit-text-security: none;
+            text-security: none;
+        }
+        button {
+            background: var(--btn-bg); border: none; padding: 8px 16px;
+            border-radius: 40px; color: white; font-weight: 500; cursor: pointer;
+            transition: 0.1s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        button:active { transform: scale(0.97); }
+        .btn-danger { background: var(--btn-danger); }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 700px) {
+            .grid-2col { grid-template-columns: 1fr; }
+            .flex-row { flex-direction: column; align-items: stretch; }
+            label { min-width: auto; }
+        }
+        .status {
+            margin-top: 8px; font-size: 0.85rem; padding: 6px; border-radius: 12px; background: var(--status-bg);
+        }
+        hr { border-color: var(--border-color); margin: 16px 0; }
+        .import-export { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); overflow: auto;
+        }
+        .modal-content {
+            background-color: var(--bg-card); margin: 5% auto; padding: 20px; border-radius: 24px;
+            width: 90%; max-width: 1000px; max-height: 80vh; overflow: auto; border: 1px solid var(--border-color);
+        }
+        .modal-content pre {
+            font-family: 'Courier New', monospace; white-space: pre-wrap; font-size: 12px; color: var(--text-primary);
+        }
+        .close-modal {
+            float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: var(--text-secondary);
+        }
+        .close-modal:hover { color: var(--text-primary); }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 12px 0; }
+        .btn-group button { margin: 0; }
+        h3 { margin-top: 0; margin-bottom: 16px; color: var(--text-primary); }
+        .char-counter {
+            text-align: right; font-size: 0.8rem; color: var(--text-secondary);
+            margin-bottom: 4px; font-family: 'Courier New', monospace;
+        }
+
+        #securityTimerBar {
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1001;
+            background: var(--bg-card); border-top: 2px solid var(--warning-color);
+            padding: 12px 20px; display: none; align-items: center; justify-content: center;
+            gap: 12px; font-family: 'Courier New', monospace; font-size: 0.95rem;
+            color: var(--text-primary); box-shadow: 0 -4px 16px rgba(0,0,0,0.5); flex-wrap: wrap;
+        }
+        #securityTimerBar .timer-icon { font-size: 1.3rem; }
+        #securityTimerBar .timer-value {
+            font-weight: bold; color: var(--warning-color); min-width: 36px; text-align: center; font-size: 1.1rem;
+        }
+        #securityTimerBar button { padding: 6px 18px; font-size: 0.85rem; border-radius: 24px; font-weight: 600; }
+        #securityTimerBar .btn-close-sec { background: var(--btn-danger); }
+        #extendPasswordBlock {
+            display: none; align-items: center; gap: 6px;
+            background: var(--bg-input); padding: 4px 8px; border-radius: 20px;
+        }
+        #extendPasswordInput {
+            width: 70px; text-align: center; font-size: 1rem; padding: 4px 8px;
+            border-radius: 12px; background: var(--bg-input); color: var(--text-primary);
+            border: 1px solid var(--border-color); letter-spacing: 5px;
+        }
+        #extendConfirmBtn { padding: 4px 14px; font-size: 0.8rem; background: #2d5a27; }
+        #extendCancelBtn { padding: 4px 14px; font-size: 0.8rem; background: #555; }
+
+        .vk-container {
+            margin-bottom: 12px; border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 12px; background: var(--bg-input);
+        }
+        .vk-grid { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; max-width: 100%; }
+        .vk-key {
+            background: var(--vk-key-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-primary); cursor: pointer;
+            transition: 0.1s; font-family: monospace; width: 38px; height: 38px;
+            font-size: 1.1rem; padding: 2px; text-align: center;
+            display: flex; align-items: center; justify-content: center; user-select: none;
+        }
+        .vk-key:hover { background: var(--vk-key-hover); transform: scale(1.08); }
+        .vk-key:active { transform: scale(0.92); opacity: 0.8; }
+        .vk-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+        .vk-controls button { padding: 6px 14px; font-size: 0.85rem; }
+        .vk-label { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 0.9rem; }
+        .reveal-btn {
+            padding: 4px 12px; font-size: 0.8rem; background: #555;
+            border-radius: 14px; cursor: pointer; user-select: none;
+            -webkit-user-select: none; border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .reveal-btn:active { background: #777; }
+    </style>
+</head>
+<body>
+
+<div id="securityTimerBar">
+    <span class="timer-icon">⏳</span>
+    <span id="timerLabel">Таймер:</span>
+    <span class="timer-value" id="timerValue">120</span>
+    <span id="timerSecLabel">сек</span>
+    <span id="extendPasswordBlock">
+        <input type="password" id="extendPasswordInput" maxlength="4" placeholder="****">
+        <button id="extendConfirmBtn">OK</button>
+        <button id="extendCancelBtn">Отмена</button>
+    </span>
+    <button class="btn-close-sec" id="closeTimerBtn">Закрыть</button>
+</div>
+
+<div class="app-container">
+    <div class="header">
+        <div></div>
+        <div class="header-right">
+            <button id="themeToggleBtn" class="theme-btn" title="Переключить тему">🌙</button>
+            <select id="langSelect" class="lang-select">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+    </div>
+    <div class="content">
+        <!-- УПРАВЛЕНИЕ КНИГАМИ -->
+        <div class="card">
+            <h3 id="manageTitle">Управление книгами</h3>
+            <p id="deleteWarning">Внимание! Удаление книг приведёт к полной потере данных.</p>
+
+            <div class="flex-row">
+                <label id="selectBookLabel">Выберите книгу:</label>
+                <select id="manageBookSelect" style="flex:1"></select>
+                <button id="refreshManageBooks">Обновить</button>
+            </div>
+            <div class="flex-row">
+                <button id="deleteSelectedBookBtn" class="btn-danger">УДАЛИТЬ ВЫБРАННУЮ КНИГУ</button>
+            </div>
+            <div id="manageDeleteStatus" class="status"></div>
+
+            <hr>
+
+            <div class="flex-row">
+                <button id="deleteAllBooksBtn" class="btn-danger">УДАЛИТЬ ВСЕ КНИГИ</button>
+            </div>
+            <div id="deleteStatus" class="status"></div>
+        </div>
+
+        <!-- СОЗДАНИЕ КНИГИ -->
+        <div class="card">
+            <h3 id="createBookTitle">Создание книги</h3>
+            <div class="flex-row"><label id="bookNameLabel">Имя книги:</label><input type="text" id="bookName" placeholder="book_20250410"></div>
+            <div class="flex-row"><label id="pagesLabel">Страниц:</label><input type="number" id="genPages" value="20"></div>
+            <div class="flex-row"><label id="rowsLabel">Строк:</label><input type="number" id="genRows" value="50"></div>
+            <div class="flex-row"><label id="colsLabel">Символов в строке:</label><input type="number" id="genCols" value="50"></div>
+            <div class="flex-row"><label id="charsForGenLabel">Символы для генерации:</label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <label><input type="checkbox" id="chRussian" checked> <span id="chRussianLabel">Русские (А-я)</span></label>
+                    <label><input type="checkbox" id="chEnglish" checked> <span id="chEnglishLabel">English (A-z)</span></label>
+                    <label><input type="checkbox" id="chSymbols" checked> <span id="chSymbolsLabel">Символы</span></label>
+                    <label><input type="checkbox" id="chSpace" checked> <span id="chSpaceLabel">Пробелы</span></label>
+                </div>
+            </div>
+            <div class="flex-row"><label><input type="checkbox" id="useCrypto" checked> <span id="cryptoLabel">Крипто-генератор</span></label></div>
+            <div class="flex-row"><label><input type="checkbox" id="useManual"> <span id="manualLabel">Свой текст (1 стр.)</span></label></div>
+            <div class="flex-row"><label id="manualTextLabel">Свой текст:</label>
+                <textarea id="manualBookText" rows="3" style="flex:1" placeholder="Вставьте сюда текст вашей книги (каждый символ — ячейка)"></textarea>
+            </div>
+            <div class="flex-row"><button id="createBookBtn">СОЗДАТЬ КНИГУ</button><button id="cancelGenBtn">ОТМЕНА</button></div>
+            <div id="genStatus" class="status">Готов</div>
+            <hr>
+            <div class="import-export">
+                <input type="file" id="importBookFileInput" accept=".json" style="display:none">
+                <button id="importBookBtn">Импорт обычной книги (JSON)</button>
+                <div class="flex-row" style="margin:0; align-items:center;">
+                    <label id="exportBookLabel" style="min-width:auto; margin:0;">Книга для экспорта:</label>
+                    <select id="exportBookSelect" style="flex:1; min-width:150px;"></select>
+                    <button id="exportBookBtn">Экспорт обычной книги (JSON)</button>
+                </div>
+            </div>
+            <div id="importExportStatus" class="status"></div>
+        </div>
+
+        <!-- ШИФРОВАНИЕ И ДЕШИФРОВАНИЕ -->
+        <div class="grid-2col">
+            <div class="card">
+                <h3 id="encryptTitle">Шифрование</h3>
+                <div class="flex-row"><label id="encryptBookLabel">Книга:</label><select id="encryptBookSelect" style="flex:1"></select></div>
+                <div class="flex-row"><button id="refreshEncryptBooks">Обновить</button><button id="loadEncryptBook">Загрузить</button></div>
+                <div id="encryptBookInfo" class="status"></div>
+                <div class="vk-label"><label><input type="checkbox" id="useVirtualKeyboardEncrypt"> <span id="vkLabelEncrypt">Виртуальная клавиатура</span></label></div>
+                <div id="virtualKeyboardEncrypt" class="vk-container" style="display:none;">
+                    <div id="vkGridEncrypt" class="vk-grid"></div>
+                    <div class="vk-controls">
+                        <button id="vkBackspaceEncrypt">⌫</button><button id="vkSpaceEncrypt">Пробел</button><button id="vkClearEncrypt">Очистить</button>
+                        <button id="vkToggleCaseEncrypt">Aa</button><button id="vkLatinEncrypt">EN</button><button id="vkDigitsEncrypt">123</button>
+                    </div>
+                </div>
+                <div class="flex-row" style="align-items:flex-start;">
+                    <label id="messageLabel" style="padding-top:8px;">Сообщение:</label>
+                    <div style="flex:1; display:flex; flex-direction:column;">
+                        <div id="encryptCharCounter" class="char-counter">Символов: 0</div>
+                        <textarea id="encryptMsg" rows="4" style="width:100%;" class="masked-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="flex-row"><button id="encryptRevealBtn" class="reveal-btn">👁 Удерживать для просмотра</button></div>
+                <div class="btn-group">
+                    <button id="encryptMsgLoad">Загрузить</button><button id="encryptMsgPaste">Вставить</button>
+                    <button id="encryptMsgCopy">Копировать</button><button id="encryptMsgClear">Очистить</button>
+                </div>
+                <div class="flex-row"><button id="doEncryptBtn">ЗАШИФРОВАТЬ</button><button id="cancelEncryptBtn">ОТМЕНА</button></div>
+                <div class="flex-row"><label id="cipherLabel">Шифр:</label><textarea id="encryptResult" rows="4" style="flex:1" readonly></textarea></div>
+                <div class="btn-group">
+                    <button id="encryptResultCopy">Копировать</button><button id="encryptResultSave">Сохранить</button>
+                    <button id="encryptResultClear">Очистить</button>
+                </div>
+                <div id="encryptStatus" class="status">Готов</div>
+            </div>
+
+            <div class="card">
+                <h3 id="decryptTitle">Дешифрование</h3>
+                <div class="flex-row"><label id="decryptBookLabel">Книга:</label><select id="decryptBookSelect" style="flex:1"></select></div>
+                <div class="flex-row"><button id="refreshDecryptBooks">Обновить</button><button id="loadDecryptBook">Загрузить</button></div>
+                <div id="decryptBookInfo" class="status"></div>
+                <div class="flex-row"><label id="cipherInputLabel">Шифр:</label><textarea id="decryptCipher" rows="4" style="flex:1" placeholder="1:1:1, 1:1:2"></textarea></div>
+                <div class="btn-group">
+                    <button id="decryptCipherLoad">Загрузить</button><button id="decryptCipherPaste">Вставить</button>
+                    <button id="decryptCipherCopy">Копировать</button><button id="decryptCipherClear">Очистить</button>
+                </div>
+                <div class="flex-row"><button id="doDecryptBtn">РАСШИФРОВАТЬ</button><button id="cancelDecryptBtn">ОТМЕНА</button></div>
+                <div class="flex-row" style="align-items:flex-start;">
+                    <label id="decryptResultLabel" style="padding-top:8px;">Результат:</label>
+                    <div style="flex:1; display:flex; flex-direction:column;">
+                        <div id="decryptCharCounter" class="char-counter">Символов: 0</div>
+                        <textarea id="decryptResult" rows="4" style="width:100%;" readonly class="masked-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="flex-row"><button id="decryptRevealBtn" class="reveal-btn">👁 Удерживать для просмотра</button></div>
+                <div class="btn-group">
+                    <button id="decryptResultCopy">Копировать</button><button id="decryptResultClear">Очистить</button>
+                </div>
+                <div id="decryptStatus" class="status">Готов</div>
+            </div>
+        </div>
+
+        <!-- ЗАЩИТА КНИГИ -->
+        <div class="card">
+            <h3 id="protectTitle">Защита книги (Виженер)</h3>
+            <div class="flex-row">
+                <label><input type="radio" name="protectAction" value="encrypt" id="protectEncryptRadio" checked> <span id="protectEncryptRadioLabel">ЗАШИФРОВАТЬ КНИГУ</span></label>
+                <label><input type="radio" name="protectAction" value="decrypt" id="protectDecryptRadio"> <span id="protectDecryptRadioLabel">РАСШИФРОВАТЬ КНИГУ</span></label>
+            </div>
+            <div class="flex-row"><label id="protectBookLabel">Книга (из папки books):</label><select id="protectBookSelect" style="flex:1"></select><button id="refreshProtectBooks">Обновить</button><button id="loadProtectBook">Загрузить</button></div>
+            <div id="protectBookInfo" class="status"></div>
+            <div class="flex-row"><label id="protectAlphabetLabel">Алфавит:</label><textarea id="protectAlphabet" rows="2" style="font-family:monospace">абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?-:;()[]{}'"@#$%^&*+=<>/\|~`•√π÷×¶∆£€$¢°©®™℅абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?-:;()[]{}'"@#$%^&*+=<>/\|~`•√π÷×¶∆£€$¢°©®™℅</textarea></div>
+            <div class="flex-row"><button id="protectAlphabetRestore">Восстановить</button><button id="protectAlphabetShuffle">Перемешать</button></div>
+            <div class="flex-row"><label id="protectKeyLabel">Ключевое слово:</label><input id="protectKey" value="Мама мыла раму, а папа — читал газету Правда за 1987-й год."></div>
+            <div class="flex-row"><label id="protectRoundsLabel">Раунды:</label><input id="protectRounds" value="17" type="number"></div>
+            <div class="flex-row"><button id="execProtect">ВЫПОЛНИТЬ</button><button id="cancelProtectBtn">ОТМЕНА</button></div>
+            <div id="protectStatus" class="status"></div>
+            <hr>
+            <div class="import-export">
+                <div class="flex-row" style="margin:0; align-items:center;">
+                    <label id="exportProtectedBookLabel" style="min-width:auto; margin:0;">Зашифрованная книга для экспорта:</label>
+                    <select id="exportProtectedBookSelect" style="flex:1; min-width:150px;"></select>
+                    <button id="exportEncryptedBookBtn">Экспорт зашифрованной книги</button>
+                </div>
+                <input type="file" id="importProtectedFileInput" accept=".json" style="display:none">
+                <button id="importProtectedBookBtn">Импорт защищённой книги</button>
+            </div>
+        </div>
+
+        <!-- СТАТИСТИКА И РУКОВОДСТВО -->
+        <div class="card">
+            <h3 id="statsTitle">Статистика книги</h3>
+            <div class="flex-row"><label id="statsBookLabel">Книга:</label><select id="statsBookSelect" style="flex:1"></select><button id="refreshStatsBooks">Обновить</button><button id="showStatsBtn">Показать</button></div>
+            <pre id="statsOutput" style="background:var(--bg-input); padding:12px; border-radius:16px; overflow:auto;"></pre>
+            <div class="flex-row"><button id="viewFullBookBtn">Просмотреть книгу</button><button id="backupBookBtn">Резервная копия</button></div>
+            <div id="aboutInfo" class="status" style="margin-top:20px;">
+                <pre id="aboutText" style="white-space: pre-wrap;">
+StrikeCipheeSVA
+Версия 3.19 (Web)
+Автор: Cipher_MasterSVA
+Дата: 2026
+
+
+РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ (РУССКИЙ)
+
+
+
+1. ОБЩЕЕ ОПИСАНИЕ
+
+StrikeCipherSVA — инструмент для шифрования текстов методом книжного шифра
+с пометкой использованных символов и удалением символа в ячейке
+(Amnesic Book Cipher — амнезия символов).
+
+Программа представляет собой один HTML-файл, открывается в любом современном
+браузере, не требует установки и подключения к интернету. Все данные хранятся
+локально в IndexedDB браузера.
+
+ОСНОВНОЙ ПРИНЦИП:
+Книга — трёхмерный массив символов (Страницы × Строки × Символы).
+При шифровании каждый символ сообщения заменяется координатами случайной
+свободной ячейки с таким же символом. Использованная ячейка немедленно
+УДАЛЯЕТСЯ — символ уничтожается, на его месте остаётся null. Без книги
+координаты выглядят как случайный набор чисел.
+
+КЛЮЧЕВОЕ ОТЛИЧИЕ от классического книжного шифра:
+Использованные ячейки помечаются, после чего символ уничтожается. Книга
+не помнит, какие символы были использованы. После завершения сеанса связи
+невозможно доказать, какой символ был в ячейке. Это — «амнезия книги»
+(Amnesic Book). Даже при полном доступе к книге постфактум содержание
+переписки невосстановимо.
+
+
+2. УПРАВЛЕНИЕ КНИГАМИ
+
+ТОЧЕЧНОЕ УДАЛЕНИЕ КНИГИ
+Выберите книгу из общего списка (обычные и защищённые) и нажмите
+«УДАЛИТЬ ВЫБРАННУЮ КНИГУ». Рекомендуется удалять открытую книгу
+сразу после создания защищённой копии через раздел «Защита книги».
+
+ПОЛНАЯ ОЧИСТКА БАЗЫ ДАННЫХ
+Удаляет все книги (обычные и защищённые) из IndexedDB.
+1. Нажмите «УДАЛИТЬ ВСЕ КНИГИ».
+2. Подтвердите действие.
+
+
+3. СОЗДАНИЕ КНИГИ
+
+1. Введите имя книги (латиница/кириллица).
+2. Задайте размеры: Страницы, Строки, Символы в строке.
+3. Выберите наборы символов: Кириллица, Латиница, Символы, Пробел.
+4. Рекомендуется: включите «Крипто-генератор» (crypto.getRandomValues).
+5. Нажмите «СОЗДАТЬ КНИГУ».
+
+ИМПОРТ И ЭКСПОРТ:
+— Импорт обычной книги — выберите файл .json.
+— Экспорт обычной книги — выберите книгу из выпадающего списка
+  «Книга для экспорта» и нажмите «Экспорт обычной книги (JSON)».
+  Будет сохранён файл с именем выбранной книги.
+
+ВАЖНО: После создания книги она хранится в открытом виде. Сразу после
+создания защищённой копии (раздел 4) удалите открытую книгу через
+«Управление книгами» → «УДАЛИТЬ ВЫБРАННУЮ КНИГУ».
+
+
+4. ЗАЩИТА КНИГИ (ВИЖЕНЕР)
+
+Шифрование книги для безопасной передачи по открытым каналам.
+
+ЗАШИФРОВАТЬ КНИГУ (отправитель):
+1. Выберите режим «ЗАШИФРОВАТЬ КНИГУ».
+2. Выберите обычную книгу и нажмите «Загрузить».
+3. Заполните: Алфавит, Ключ, Раунды (рекомендуется 17).
+4. Нажмите «ВЫПОЛНИТЬ».
+5. Защищённая книга сохранится в IndexedDB с пометкой в имени
+   (например, "моя_книга_protected_1738331068899").
+
+ЭКСПОРТ ЗАШИФРОВАННОЙ КНИГИ:
+Выберите книгу из выпадающего списка «Зашифрованная книга для экспорта»
+и нажмите «Экспорт зашифрованной книги». Будет сохранён файл с именем,
+содержащим пометку _protected_ и временную метку.
+
+РАСШИФРОВАТЬ КНИГУ (получатель):
+1. Выберите режим «РАСШИФРОВАТЬ КНИГУ».
+2. Нажмите «Импорт защищённой книги» и загрузите .json.
+3. Выберите книгу и нажмите «Загрузить».
+4. Введите те же Алфавит, Ключ и Раунды.
+5. Нажмите «ВЫПОЛНИТЬ».
+
+КРИТИЧЕСКИ ВАЖНО: Защищать можно только новую, ни разу не использованную
+книгу. Удалённые символы (null) не маскируются шифром Виженера.
+
+АВТООЧИСТКА ПОЛЕЙ ЗАЩИТЫ: Поля алфавита, ключа и раундов имеют таймер
+на 1 минуту. Если вы не изменяли их в течение минуты — они сбрасываются
+к значениям по умолчанию. Кнопка «Восстановить» также сбрасывает таймер.
+
+ПОСЛЕ СОЗДАНИЯ ЗАЩИЩЁННОЙ КНИГИ: удалите открытую книгу через
+«Управление книгами» → «УДАЛИТЬ ВЫБРАННУЮ КНИГУ».
+
+
+5. ШИФРОВАНИЕ ТЕКСТА (книжный шифр с удалением)
+
+Используется ваша книга (Книга-1).
+1. Выберите книгу из списка и нажмите «Загрузить».
+2. При загрузке книги введите алфавит, ключ и раунды Виженера.
+3. При первой загрузке введите 4-символьный пароль продления таймера.
+4. Введите сообщение.
+5. Нажмите «ЗАШИФРОВАТЬ».
+6. Результат — координаты вида страница:строка:символ.
+
+РЕКОМЕНДАЦИЯ ПО ДЛИНЕ СООБЩЕНИЙ:
+Для защиты от анализа трафика старайтесь, чтобы все сообщения были
+примерно одинаковой длины. Используйте счётчик символов над полем ввода.
+Если сообщение короче нужной длины — дополните его случайными символами
+в конце. Если сообщение длиннее — разбейте на несколько частей.
+Договоритесь с получателем о стандартной длине заранее (например, 40,
+60 или 100 символов). Получатель будет видеть длину вашего сообщения
+в счётчике над полем результата и сможет ориентироваться на неё
+при ответе.
+
+ЗАЩИТА ОТ КЕЙЛОГЕРА:
+Включите галочку «Виртуальная клавиатура» над полем сообщения.
+Раскладка клавиатуры случайна при каждом включении и каждой смене режима.
+Кейлогер видит только клики по координатам, но не знает раскладку.
+
+СКРЫТИЕ ТЕКСТА:
+Вводимый текст скрыт точками. Нажмите и удерживайте кнопку
+«👁 Удерживать для просмотра», чтобы увидеть текст.
+
+МГНОВЕННОЕ СОХРАНЕНИЕ:
+После каждой операции шифрования или дешифрования книга немедленно
+сохраняется в зашифрованном виде в IndexedDB. Отключение электричества
+или крах браузера не приведут к потере использованных ячеек.
+
+
+6. ДЕШИФРОВАНИЕ ТЕКСТА
+
+Используется книга собеседника (Книга-2).
+1. Выберите книгу и нажмите «Загрузить».
+2. При загрузке введите алфавит, ключ и раунды Виженера.
+3. Вставьте координаты в поле «Шифр».
+4. Нажмите «РАСШИФРОВАТЬ».
+5. Результат скрыт точками. Удерживайте «👁» для просмотра.
+
+СЧЁТЧИК СИМВОЛОВ:
+Над полем результата отображается количество символов в расшифрованном
+сообщении. Ориентируйтесь на эту длину при составлении ответа.
+
+МГНОВЕННОЕ СОХРАНЕНИЕ:
+После дешифрования использованные ячейки немедленно сохраняются.
+
+
+7. ТАЙМЕР БЕЗОПАСНОСТИ (Web Worker)
+
+После загрузки книги запускается единый таймер на 2 минуты. Один таймер
+на обе загруженные книги. Таймер работает в фоновом Web Worker и НЕ
+приостанавливается при блокировке экрана или сворачивании браузера.
+Время считается по реальным часам.
+
+Как работает:
+1. Загрузка первой книги — таймер на 2 минуты. Запрашивается 4-символьный
+   пароль продления.
+2. Загрузка второй книги — таймер сбрасывается на полные 2 минуты.
+   Пароль не запрашивается повторно.
+3. За 30 секунд до истечения — таймер становится оранжевым.
+4. Истечение 2 минут — окно продления на 15 секунд. Нужно ввести пароль.
+5. Верный пароль — таймер продлётся на 2 минуты.
+6. Неверный пароль или бездействие — все книги шифруются, все поля
+   очищаются.
+7. Кнопка «Закрыть» — мгновенное шифрование и очистка.
+
+ВАЖНО: Если вы заблокировали телефон на 20 минут, после разблокировки
+таймер покажет 0 и немедленно зашифрует книги. Таймер не ждёт, пока
+вы вернётесь — он работает по реальному времени.
+
+
+8. СТАТИСТИКА И АУДИТ КНИГИ
+
+1. Выберите книгу в блоке «Статистика книги».
+2. Нажмите «Показать» — информация о заполнении.
+3. «Просмотреть книгу» — содержимое в отдельном окне. [_] = удалено.
+4. «Резервная копия» — сохранить в .json.
+
+
+9. ДВУХКНИЖНАЯ СХЕМА ПЕРЕПИСКИ
+
+— Вы шифруете своей книгой (Книга-1). Собеседник расшифровывает её копией.
+— Собеседник шифрует своей книгой (Книга-2). Вы расшифровываете её копией.
+
+ПОРЯДОК ДЕЙСТВИЙ:
+1. Вы создаёте Книгу-1, шифруете Виженером, передаёте копию.
+2. Собеседник создаёт Книгу-2, шифрует Виженером, передаёт копию вам.
+3. Обмен координатами — через любые открытые каналы.
+4. При истощении книги — создаётся новая.
+
+ПОЧЕМУ ДВЕ КНИГИ:
+— Компрометация одной книги раскрывает только одно направление.
+— Каждый контролирует свою книгу.
+
+
+10. НАСТРОЙКИ
+
+— Язык: Русский / English (правый верхний угол).
+— Тема: 🌙/☀️ — тёмная/светлая.
+— Панель таймера: плавающая снизу.
+
+
+
+11. КРИТИЧЕСКИЕ ПАРАМЕТРЫ БЕЗОПАСНОСТИ
+
+
+
+11.1. ТРЕБОВАНИЯ К КНИГЕ
+
+Книга ДОЛЖНА быть сгенерирована со следующими настройками:
+
+— Включён «Крипто-генератор» (crypto.getRandomValues).
+— Выбраны ВСЕ наборы символов (Русские, English, Символы, Пробелы).
+— Алфавит книги должен быть максимально широким (рекомендуется
+  не менее 200 уникальных символов).
+— Размер книги подбирается под ожидаемую нагрузку.
+
+Расчёт ёмкости (пример для книги на 10 000 ячеек):
+
+При стандартной длине 40 символов — ~250 сообщений.
+При 3–5 сообщениях в день — хватает на 50–80 дней.
+Семь книг (по одной на день недели, всего 70 000 ячеек) —
+примерно на год общения при среднем темпе.
+
+Подбирайте размер под свой темп. Книга должна заканчиваться
+не посреди сеанса. Если книга подходит к концу — используйте
+раздел 15 для плановой замены.
+
+
+11.2. ПРИНЦИП СВЕЖЕСТИ КНИГИ
+
+Чем чаще заменяется книга — тем лучше. Это как вода в баке:
+
+— Оставите на неделю — протухнет.
+— Обновляете постоянно — свежая, бак чистый.
+
+Долгоживущая книга накапливает дыры. Короткоживущая — не оставляет
+следа.
+
+Рекомендации:
+— Малая нагрузка: менять раз в месяц.
+— Средняя: раз в неделю (ротация по дням, раздел 14.1).
+— Высокая или параноидальный режим: каждый день или каждый сеанс
+  (раздел 14.2).
+
+
+11.3. УТИЛИЗАЦИЯ ИСПОЛЬЗОВАННОЙ КНИГИ
+
+Книга с дырами бесполезна. Она не содержит информации о переписке.
+Она не восстановит ни одного сообщения. Её единственная ценность —
+неиспользованные ячейки. Но держать её ради них бессмысленно.
+
+Правило:
+— Перешли на новую книгу — СРАЗУ удалите старую.
+— Не накапливайте дырявые книги в IndexedDB.
+— Противник, захвативший использованную книгу, не получает НИЧЕГО.
+
+
+11.4. ТРЕБОВАНИЯ К КЛЮЧУ ВИЖЕНЕРА
+
+— Длина ключа: не менее 40–60 символов.
+— Ключ должен быть случайным.
+— Хранить отдельно от книги.
+— При личной встрече: бумага, уничтожить после запоминания.
+— При замене книги — заменить ключ. Старый уничтожить.
+
+
+11.5. ТРЕБОВАНИЯ К АЛФАВИТУ ВИЖЕНЕРА
+
+— Максимальная длина (поле «Алфавит»).
+— Нажать «Перемешать» для изменения порядка.
+— Получатель использует ТОЧНО такой же.
+— Передать вместе с ключом на первой встрече.
+
+
+
+12. ЗАЩИТА ОТ АНАЛИЗА ТРАФИКА: ФИКСИРОВАННАЯ ДЛИНА
+
+
+Для предотвращения анализа длины сообщений используйте следующий
+протокол:
+
+1. Заранее договоритесь с получателем о СТАНДАРТНОЙ ДЛИНЕ сообщений
+   (например: 40, 60 или 100 символов). Эта длина едина для всего
+   сеанса связи.
+
+2. При шифровании:
+   — Введите осмысленный текст.
+   — Если он короче стандартной длины — добейте сообщение случайными
+     символами до стандартной длины. Используйте виртуальную клавиатуру
+     в случайном режиме для генерации мусора.
+   — Если текст длиннее — разбейте на несколько сообщений, каждое
+     стандартной длины.
+
+3. При расшифровке:
+   — Вы получите сообщение стандартной длины.
+   — Прочитайте осмысленное начало. Хвост из случайных символов
+     ИГНОРИРУЙТЕ.
+   — Ориентируйтесь на смысл, а не на конец строки.
+
+4. Счётчик символов над полем ввода и над полем результата помогает
+   контролировать длину.
+
+ЧТО ЭТО ДАЁТ:
+Перехватчик видит только количество координат. Все сообщения имеют
+одинаковое количество координат. Невозможно определить, где
+короткая команда «OK», а где длинный приказ. Анализ трафика
+бесполезен.
+
+ПРИ ИСТОЩЕНИИ КНИГИ:
+Количество использованных ячеек всегда кратно стандартной длине.
+Противник, захвативший книгу с дырами, не узнает, сколько
+осмысленных символов было в каждом блоке — только общее количество
+блоков.
+
+
+
+13. УСТОЙЧИВОСТЬ К АКТИВНОМУ ВМЕШАТЕЛЬСТВУ (MITM)
+
+
+Активный противник может перехватывать и ИЗМЕНЯТЬ координаты
+в канале связи. Система имеет встроенную защиту от этой угрозы
+без необходимости в дополнительных кодах аутентификации.
+
+КАК ЭТО РАБОТАЕТ:
+
+— Если противник изменяет хотя бы одну координату в шифротексте,
+  получатель расшифрует сообщение и получит КАШУ — бессмысленный
+  набор символов.
+— Это происходит потому, что сдвиг даже на одну ячейку в случайной
+  книге немедленно ломает ВСЁ сообщение. Символы в книге случайны,
+  поэтому подмена даёт не «почти правильный» текст, а визуально
+  очевидный мусор.
+— Получатель ВИДИТ, что сообщение повреждено, и понимает: было
+  вмешательство.
+
+ДЕЙСТВИЯ ПРИ ОБНАРУЖЕНИИ ВМЕШАТЕЛЬСТВА:
+
+1. Получатель получает кашу вместо текста.
+2. Немедленно прекратить использование скомпрометированной книги.
+3. Связаться с отправителем по РЕЗЕРВНОМУ каналу и сообщить:
+   «Книга скомпрометирована. Пересоздаём.»
+4. Обе стороны генерируют НОВУЮ книгу, шифруют Виженером,
+   обмениваются.
+5. Связь продолжается с новой книгой.
+
+ВАЖНО: Противник НЕ МОЖЕТ подменить сообщение так, чтобы получатель
+принял ложный текст за настоящий. Система самодиагностируется.
+Единственное, чего может добиться противник — временно нарушить
+связь (DoS). Содержание переписки остаётся защищённым.
+
+
+
+14. РАСШИРЕННЫЕ СХЕМЫ УПРАВЛЕНИЯ КНИГАМИ
+
+Для максимальной защиты рекомендуется использовать не одну пару
+книг, а систему ротации.
+
+14.1. БАЗОВАЯ РОТАЦИЯ: ОДНА КНИГА В ДЕНЬ
+
+— Создайте 7 комплектов книг (по одному на каждый день недели).
+— Каждый комплект: Книга-отправителя и Книга-получателя.
+— Понедельник — Комплект-1. Вторник — Комплект-2. И так далее.
+— Каждый комплект шифруется СВОИМ ключом Виженера.
+
+ЧТО ЭТО ДАЁТ:
+Компрометация ключа от одного дня раскрывает переписку только
+за этот день недели. Остальные дни не тронуты.
+
+14.2. ПРОДВИНУТАЯ РОТАЦИЯ: КОМПЛЕКТ НА КАЖДЫЙ СЕАНС
+
+— Заранее создайте N комплектов книг (например, 30 штук).
+— Каждый комплект используется ОДИН РАЗ для одного сеанса связи.
+— После завершения сеанса комплект УНИЧТОЖАЕТСЯ (удалить обе книги).
+— Следующий сеанс — следующий комплект.
+
+ЧТО ЭТО ДАЁТ:
+Даже при полной компрометации устройства после сеанса противник
+найдёт только использованные (дырявые) книги. История переписки
+не восстановлена (Амнезия). Будущие сеансы не скомпрометированы
+(ключи разные).
+
+
+
+15. ПЕРЕДАЧА НОВЫХ КЛЮЧЕЙ ЧЕРЕЗ ИСТОЩЁННУЮ КНИГУ
+
+
+Когда книга подходит к концу (осталось мало ячеек), можно
+передать параметры НОВОЙ книги прямо в шифрованном сообщении:
+
+1. Отправитель пишет сообщение вида:
+   «Новая книга: алфавит=..., ключ=..., раунды=17. Начало завтра.»
+2. Сообщение шифруется остатками СТАРОЙ книги.
+3. Получатель расшифровывает, получает новые параметры.
+4. Обе стороны генерируют новые книги, шифруют новым ключом,
+   обмениваются.
+5. Старая книга уничтожается.
+
+ЧТО ЭТО ДАЁТ:
+Первая личная встреча нужна только ОДИН РАЗ. Далее система
+самоподдерживается через защищённый канал. Ключи передаются
+внутри шифрованных сообщений. Круг замкнут.
+
+
+
+16. РУЧНОЙ РЕЖИМ: ШИФРОВАНИЕ НА БУМАГЕ
+
+
+Система StrikeCipheeSVA спроектирована так, что может работать
+полностью автономно, без компьютера и электричества. Всё, что нужно —
+распечатанная книга, карандаш и линейка.
+
+
+16.1. КОГДА ЭТО НУЖНО
+
+— Отсутствие электричества или устройств.
+— Полная изоляция от цифрового следа (никаких излучений, логов,
+  метаданных).
+— Передача через курьера, голубиную почту, радио голосом.
+— Последний резервный канал, когда всё остальное скомпрометировано.
+
+
+16.2. ПОДГОТОВКА КНИГИ ДЛЯ ПЕЧАТИ
+
+1. Сгенерируйте книгу в программе (раздел 3).
+2. Нажмите «Просмотреть книгу» в разделе «Статистика книги».
+3. Распечатайте содержимое. Структура печати:
+
+   Страница 1
+   Стр.  1: ж Щ ъ Ф ы В а П р 2 ] k L о Q . Д ~ я 7 ...
+   Стр.  2: U 3 й ш Ё © Ю м ь T + Ж { ч ъ Х 9 ; „ ...
+   ...
+
+4. Создайте ДВА экземпляра: для себя и для получателя.
+
+5. ПЕРЕДАЧА КНИГИ ПОЛУЧАТЕЛЮ
+
+   Книга — это случайный набор символов. Без контекста она
+   бесполезна для постороннего. Однако в момент передачи книга
+   уязвима: если противник скопирует её ДО начала переписки,
+   он сможет расшифровывать все будущие сообщения.
+
+   ВАЖНО: первая передача — самая безопасная. Никто ещё не знает
+   о вашей связи. За вами не следят, потому что нет повода.
+   Объекта наблюдения не существует. Используйте этот момент
+   максимально надёжно.
+
+   После первой передачи личные встречи больше не нужны. Далее
+   система работает автономно: новые книги и ключи передаются
+   внутри шифрованных сообщений (раздел 15).
+
+   СПОСОБ 1 — ЛИЧНАЯ ВСТРЕЧА (наиболее надёжный):
+
+   Отправитель и получатель встречаются лично. Книга передаётся
+   из рук в руки. Вы видите лицо получателя. Вы видите, что книга
+   попала именно к нему. Никаких посредников, никаких копий.
+
+   СПОСОБ 2 — ЗАКЛАДКА (наиболее анонимный):
+
+   Отправитель оставляет книгу в условленном месте. Сообщает
+   получателю координаты тайника по оговорённому каналу.
+   Получатель забирает. Прямого контакта нет. Лица не видят.
+   Идеальная анонимность.
+
+   ПРЕДУПРЕЖДЕНИЕ: если за вами УЖЕ следят на момент закладки,
+   противник найдёт книгу раньше получателя. Но на этапе первой
+   передачи это маловероятно — слежки ещё нет. В дальнейшем
+   закладки не нужны: система работает автономно (раздел 15).
+
+   СПОСОБ 3 — ДОВЕРЕННЫЙ КУРЬЕР (запасной):
+
+   Если личная встреча и закладка невозможны — передача через
+   доверенное лицо. Это должен быть человек, которому вы доверяете
+   безоговорочно. Не нанятый курьер. Свой.
+
+   Требования:
+   — Книга в непрозрачном запечатанном конверте.
+   — Доверенное лицо знает: конверт нельзя вскрывать,
+     фотографировать, сканировать, показывать кому-либо.
+   — Передача из рук в руки.
+   — После вручения получатель подтверждает получение.
+   — Если конверт повреждён — книга скомпрометирована.
+     Уничтожить. Создать новую.
+
+   ПОМНИТЕ: доверенное лицо — точка уязвимости. Если есть
+   сомнения — используйте личную встречу или закладку.
+
+6. После успешной передачи цифровую копию книги уничтожьте
+   (раздел 11.3).
+
+
+16.3. ШИФРОВАНИЕ ВРУЧНУЮ (отправитель)
+
+1. Положите распечатку книги перед собой.
+2. На отдельном листе напишите сообщение.
+3. Для КАЖДОГО символа сообщения:
+
+   а) Найдите в книге ЛЮБУЮ ячейку с таким же символом.
+   б) Убедитесь, что эта ячейка ещё не зачёркнута.
+   в) Запишите координаты: страница:строка:позиция.
+      Например: 3:14:7
+   г) ЗАЧЕРКНИТЕ ячейку в своей книге. Жирно. Навсегда.
+
+4. Добавьте мусор до стандартной длины (раздел 12).
+5. Набор координат — это ваш шифротекст. Например:
+   3:14:7, 12:5:33, 7:22:18, 1:41:9, ...
+
+6. Передайте координаты получателю любым способом:
+   — Радио, голосом (цифры легко диктовать).
+   — Записка через курьера.
+   — Азбука Морзе.
+   — Телефонный звонок (продиктовать вслух, после чего оба
+     синхронно зачёркивают ячейки).
+
+
+16.4. ДЕШИФРОВАНИЕ ВРУЧНУЮ (получатель)
+
+1. Положите свою копию книги перед собой.
+2. Возьмите полученные координаты.
+3. Для КАЖДОЙ координаты:
+
+   а) Найдите в книге ячейку: страница, строка, позиция.
+   б) Прочитайте символ. Запишите его.
+   в) ЗАЧЕРКНИТЕ ячейку. Жирно. Навсегда.
+
+4. Прочитайте сообщение. Игнорируйте хвост из мусора
+   (раздел 12 — фиксированная длина).
+
+
+16.5. СИНХРОНИЗАЦИЯ КНИГ ВРУЧНУЮ
+
+При ручном режиме критически важно, чтобы отправитель и получатель
+зачёркивали ОДНИ И ТЕ ЖЕ ячейки. Для этого:
+
+ПРАВИЛО: отправитель ВСЕГДА ищет ПЕРВУЮ свободную ячейку
+с нужным символом при просмотре книги ПО ПОРЯДКУ:
+
+   Страница 1 → Страница 2 → ... → последняя страница.
+   На каждой странице: Строка 1 → Строка 2 → ... → последняя.
+   В каждой строке: Позиция 1 → Позиция 2 → ... → последняя.
+
+Получатель, расшифровывая координаты, автоматически зачёркивает
+те же ячейки.
+
+Почему важен порядок:
+— Отправитель не может дважды использовать одну ячейку.
+— Получатель гарантированно зачёркивает то же, что и отправитель.
+— Книги остаются синхронными.
+
+
+16.6. ГЕНЕРАЦИЯ СЛУЧАЙНОЙ КНИГИ БЕЗ КОМПЬЮТЕРА
+
+Если компьютер недоступен, случайную книгу можно создать вручную.
+Трудоёмкость: книга на 10 000 ячеек — несколько часов работы.
+Но результат — ключ, который невозможно восстановить.
+
+СПОСОБ 1 — ИГРАЛЬНЫЕ КОСТИ:
+
+1. Составьте алфавит (например, 64 символа).
+2. Пронумеруйте каждый символ от 1 до 64.
+3. Для каждой ячейки книги:
+   — Бросьте две кости (даёт 36 вариантов).
+   — Бросьте ещё раз для уточнения (36×36 = 1296).
+   — Возьмите результат по модулю размера алфавита.
+   — Запишите символ в ячейку.
+
+СПОСОБ 2 — МЕШОК С ЖЕТОНАМИ:
+
+1. Подготовьте жетоны с символами алфавита.
+2. Количество жетонов каждого символа — равное.
+3. Для каждой ячейки: вытащите жетон, запишите символ,
+   ВЕРНИТЕ жетон обратно.
+4. Перемешайте. Следующая ячейка.
+
+СПОСОБ 3 — ТАБЛИЦА СЛУЧАЙНЫХ ЧИСЕЛ:
+
+1. Возьмите книгу случайных чисел.
+2. Каждое число преобразуйте в символ вашего алфавита.
+3. Записывайте подряд.
+
+
+16.7. ОСОБЕННОСТИ РУЧНОГО РЕЖИМА
+
+Генерация книги в цифровом режиме занимает доли секунды,
+в ручном — несколько часов. Но после создания книга работает
+одинаково надёжно в обоих режимах.
+
+Шифрование и дешифрование вручную занимают минуты на сообщение
+(против мгновенного в цифровом режиме). Это плата за полное
+отсутствие цифрового следа.
+
+Виженер в ручном режиме не используется. Книга передаётся
+в открытом виде — но она бессмысленна для постороннего.
+Случайный набор символов без контекста невозможно ни прочитать,
+ни идентифицировать как ключ.
+
+Таймер безопасности в ручном режиме заменяется дисциплиной:
+получил координаты — расшифровал — зачеркнул — убрал книгу
+в надёжное место.
+
+Цифровой след в ручном режиме отсутствует полностью. Нет логов,
+нет излучений, нет метаданных. Только бумага, карандаш и голос
+в эфире.
+
+Криптостойкость ручного режима равна цифровому при условии,
+что книга случайна и не скомпрометирована при передаче.
+
+
+16.8. УНИЧТОЖЕНИЕ
+
+После того как книга истощена (все или почти все ячейки зачёркнуты):
+
+1. Сжечь распечатку. Полностью. До пепла.
+2. Пепел развеять (не оставлять в одном месте).
+3. Создать новую книгу (раздел 3 или 16.6).
+
+Использованная бумажная книга с дырами так же бесполезна
+для противника, как и цифровая (раздел 11.3). Но бумагу
+можно потрогать. Поэтому — сжечь.
+
+16.9. ЯЗЫКОВАЯ УНИВЕРСАЛЬНОСТЬ КНИГИ
+
+Книга, сгенерированная с полным набором символов (русские, английские,
+символы, цифры), покрывает практически все звуки, которые может
+произнести человек. Русская «А» и английская «A» — один и тот же звук.
+Русская «М» и английская «M» — один звук. Поэтому книга не привязана
+к конкретному языку.
+
+Для передачи сообщения на любом языке достаточно записать его
+транслитом — через символы, передающие те же звуки. Пушту, арабский,
+китайский (пиньинь), суахили, любой другой язык — всё может быть
+записано символами из книги. Книга универсальна.
+
+16.10. НЕВОЗМОЖНОСТЬ ДОКАЗАТЕЛЬСТВА РАСШИФРОВКИ
+
+Даже если противник обладает неограниченной вычислительной мощностью
+и переберёт все возможные варианты сообщений для перехваченных
+координат, он получит тысячи осмысленных вариантов: «привет»,
+«атакуем», «отмена», «ждать». Все они одинаково возможны, потому что
+книга случайна. В ней нет закономерностей, которые могли бы указать
+на правильный вариант.
+
+Использованные ячейки уничтожены. Информация о том, какой из тысяч
+вариантов был настоящим, больше не существует во Вселенной.
+Доказать, какое именно сообщение было отправлено, невозможно.
+Никакой мощностью. Никаким компьютером. Никогда.
+
+USER MANUAL (ENGLISH)
+
+
+
+1. GENERAL DESCRIPTION
+
+StrikeCipherSVA is a text encryption tool based on the book cipher method
+with marking of used cells and deletion of the symbol in the cell
+(Amnesic Book Cipher — symbol amnesia).
+
+The program is a single HTML file that runs in any modern browser.
+No installation or internet connection required. All data is stored
+locally in the browser's IndexedDB.
+
+CORE PRINCIPLE:
+A Book is a three-dimensional array (Pages × Rows × Characters).
+During encryption, each character is replaced by coordinates of a random
+free cell containing the same character. The used cell is immediately
+DELETED — the symbol is destroyed, null remains. Without the book,
+coordinates look like random numbers.
+
+KEY DIFFERENCE from classical book cipher:
+Used cells are marked, then the symbol is destroyed. The book does NOT
+remember which symbols were used. After the session, it is impossible
+to prove what was in any cell. This is "book amnesia" (Amnesic Book).
+Even with full access to the book post factum, message content
+cannot be recovered.
+
+
+2. BOOK MANAGEMENT
+
+TARGETED BOOK DELETION
+Select a book from the combined list (regular and protected) and click
+"DELETE SELECTED BOOK". It is recommended to delete the open book
+immediately after creating a protected copy via "Book Protection".
+
+COMPLETE DATABASE PURGE
+Deletes all books (regular and protected) from IndexedDB.
+1. Click "DELETE ALL BOOKS".
+2. Confirm.
+
+
+3. CREATING A BOOK
+
+1. Enter a book name.
+2. Set dimensions: Pages, Rows, Characters per row.
+3. Select character sets: Cyrillic, Latin, Symbols, Space.
+4. Recommended: enable "Crypto-generator" (crypto.getRandomValues).
+5. Click "CREATE BOOK".
+
+IMPORT AND EXPORT:
+— Import Regular Book — select a .json file.
+— Export Regular Book — select a book from the "Book for export"
+  dropdown and click "Export regular book (JSON)". The file will be
+  saved with the selected book's name.
+
+IMPORTANT: After creation, the book is stored in open form. After creating
+a protected copy (section 4), delete the open book via
+"Book Management" → "DELETE SELECTED BOOK".
+
+
+4. BOOK PROTECTION (VIGENÈRE)
+
+ENCRYPT A BOOK (sender):
+1. Select "ENCRYPT BOOK" mode.
+2. Choose a regular book and click "Load".
+3. Fill in: Alphabet, Key, Rounds (recommended: 17).
+4. Click "EXECUTE".
+5. The protected book will be saved in IndexedDB with a _protected_ tag
+   and a timestamp in its name (e.g., "my_book_protected_1738331068899").
+
+EXPORT ENCRYPTED BOOK:
+Select a book from the "Encrypted book for export" dropdown and click
+"Export encrypted book". A file with the _protected_ name will be saved.
+
+DECRYPT A BOOK (receiver):
+1. Select "DECRYPT BOOK" mode.
+2. Click "Import Protected Book" and load the .json file.
+3. Select the book and click "Load".
+4. Enter the exact same Alphabet, Key, and Rounds.
+5. Click "EXECUTE".
+
+CRUCIAL WARNING: Only protect a brand new, never-used book.
+Deleted symbols (null) are not masked by the Vigenère cipher.
+
+AFTER CREATING A PROTECTED BOOK: delete the open book via
+"Book Management" → "DELETE SELECTED BOOK".
+
+
+5. TEXT ENCRYPTION (Book Cipher with Deletion)
+
+1. Select a book and click "Load".
+2. Enter Vigenère alphabet, key, and rounds when prompted.
+3. On first load, enter a 4-character timer extension password.
+4. Type your message.
+5. Click "ENCRYPT".
+
+MESSAGE LENGTH RECOMMENDATION:
+To protect against traffic analysis, try to keep all messages approximately
+the same length. Use the character counter above the input field.
+If the message is shorter than the desired length — add random characters
+at the end. If it is longer — split into multiple parts.
+Agree on a standard length with your contact in advance (e.g., 40, 60,
+or 100 characters). The recipient will see your message length in the
+counter above the result field and can use it as a guide when replying.
+
+ANTI-KEYLOGGER: Enable "Virtual keyboard" checkbox. Layout is random
+each time. Keylogger sees only clicks on coordinates, not the layout.
+
+HIDE TEXT: Input text is hidden with dots. Hold "👁 Hold to reveal"
+to see the text.
+
+INSTANT SAVE: After each encryption or decryption operation, the book
+is immediately saved in encrypted form to IndexedDB. Power loss or
+browser crash will not lose used cells.
+
+
+6. TEXT DECRYPTION
+
+1. Select a book and click "Load".
+2. Enter Vigenère alphabet, key, and rounds when prompted.
+3. Paste coordinates into the "Ciphertext" field.
+4. Click "DECRYPT".
+5. Result is hidden with dots. Hold "👁" to reveal.
+
+CHARACTER COUNTER:
+The number of characters in the decrypted message is displayed above
+the result field. Use this length as a guide when composing your reply.
+
+INSTANT SAVE: Used cells are saved immediately after decryption.
+
+
+7. SECURITY TIMER (Web Worker)
+
+A single 2-minute timer starts after book load. The timer runs in a
+background Web Worker and does NOT pause when the screen is locked
+or the browser is minimized. Time is measured by real clock.
+
+How it works:
+1. First book loaded — 2-minute timer starts. Enter 4-char password.
+2. Second book loaded — timer resets to full 2 minutes.
+3. 30 seconds remaining — timer turns orange.
+4. Timer expires — 15-second extension window. Enter password.
+5. Correct password — timer extended by 2 minutes.
+6. Wrong password or no action — all books encrypted, fields cleared.
+7. "Close" button — instant encryption and clearing.
+
+IMPORTANT: If you lock your phone for 20 minutes, the timer will show 0
+when you unlock and immediately encrypt all books. The timer does NOT
+wait for you — it runs by real time.
+
+
+8. BOOK STATISTICS & AUDIT
+
+1. Select a book. Click "Show" for fill statistics.
+2. "View Book" — full contents. [_] = deleted cell.
+3. "Backup Copy" — save as .json.
+
+
+9. DUAL-BOOK SCHEME
+
+— You encrypt with your book (Book-1). Contact decrypts with its copy.
+— Contact encrypts with their book (Book-2). You decrypt with its copy.
+
+WORKFLOW:
+1. Create Book-1, encrypt with Vigenère, transfer a copy.
+2. Contact creates Book-2, encrypts with Vigenère, transfers a copy to you.
+3. Exchange coordinates via any open channel.
+4. When the book is depleted — create a new one.
+
+WHY TWO BOOKS:
+— Compromise of one book reveals only one direction.
+— Each party controls their own book.
+
+
+10. SETTINGS
+
+— Language: Русский / English (top right corner).
+— Theme: 🌙/☀️ — dark/light.
+— Timer bar: floating at the bottom.
+
+
+
+11. CRITICAL SECURITY PARAMETERS
+
+
+
+11.1. BOOK REQUIREMENTS
+
+The book MUST be generated with the following settings:
+
+— "Crypto-generator" enabled (crypto.getRandomValues).
+— ALL character sets selected (Russian, English, Symbols, Spaces).
+— The book's alphabet must be as wide as possible (at least
+  200 unique characters recommended).
+— Book size is chosen based on expected usage.
+
+Capacity estimate (example for a 10,000 cell book):
+
+At a standard length of 40 characters — ~250 messages.
+At 3–5 messages per day — enough for 50–80 days.
+Seven books (one per day of the week, 70,000 cells total) —
+enough for about a year of communication at an average pace.
+
+Choose the size according to your pace. The book should not run out
+mid-session. If the book is nearing depletion — use Section 15
+for a planned replacement.
+
+
+11.2. BOOK FRESHNESS PRINCIPLE
+
+The more often a book is replaced, the better. It's like water in a tank:
+
+— Leave it for a week — it goes stale.
+— Refresh it constantly — it stays fresh, the tank stays clean.
+
+A long-lived book accumulates holes. A short-lived book leaves no trace.
+
+Recommendations:
+— Light usage: replace once a month.
+— Medium usage: once a week (daily rotation, Section 14.1).
+— Heavy usage or paranoid mode: every day or every session
+  (Section 14.2).
+
+
+11.3. DISPOSAL OF USED BOOKS
+
+A book with holes is useless. It contains no information about
+the correspondence. It cannot recover a single message. Its only
+value — unused cells. Holding onto it for those is pointless.
+
+Rule:
+— Switched to a new book — DELETE the old one IMMEDIATELY.
+— Do not accumulate hole-ridden books in IndexedDB.
+— An adversary who captures a used book gets NOTHING.
+
+
+11.4. VIGENÈRE KEY REQUIREMENTS
+
+— Key length: at least 40–60 characters.
+— The key must be random.
+— Store separately from the book.
+— For in-person exchange: use paper, destroy after memorizing.
+— When replacing a book — replace the key. Destroy the old one.
+
+
+11.5. VIGENÈRE ALPHABET REQUIREMENTS
+
+— Maximum length ("Alphabet" field).
+— Press "Shuffle" to randomize the order.
+— The recipient must use the EXACT same alphabet.
+— Exchange together with the key at the first meeting.
+
+
+
+12. TRAFFIC ANALYSIS PROTECTION: FIXED MESSAGE LENGTH
+
+
+To prevent message length analysis, use the following protocol:
+
+1. Agree on a STANDARD MESSAGE LENGTH with your contact in advance
+   (e.g., 40, 60, or 100 characters). This length is uniform
+   for the entire communication session.
+
+2. When encrypting:
+   — Enter your meaningful text.
+   — If it's shorter than the standard length — pad the message
+     with random characters up to the standard length. Use the
+     virtual keyboard in random mode to generate padding.
+   — If it's longer — split into multiple messages, each of
+     standard length.
+
+3. When decrypting:
+   — You will receive a message of standard length.
+   — Read the meaningful beginning. IGNORE the tail of random
+     characters.
+   — Focus on meaning, not on where the string ends.
+
+4. The character counter above the input field and above the result
+   field helps you control the length.
+
+WHAT THIS ACHIEVES:
+An interceptor sees only the number of coordinates. All messages
+have the same number of coordinates. It is impossible to determine
+whether it was a short "OK" or a long directive. Traffic analysis
+is useless.
+
+WHEN THE BOOK IS DEPLETED:
+The number of used cells is always a multiple of the standard length.
+An adversary who captures a book with holes cannot determine how many
+meaningful characters were in each block — only the total number
+of blocks.
+
+
+
+13. RESISTANCE TO ACTIVE INTERFERENCE (MITM)
+
+
+An active adversary may intercept and MODIFY coordinates in the
+communication channel. The system has built-in protection against
+this threat without the need for additional authentication codes.
+
+HOW IT WORKS:
+
+— If the adversary changes even a single coordinate in the ciphertext,
+  the recipient will decrypt the message and get GARBAGE — a meaningless
+  string of characters.
+— This happens because a shift of even one cell in a random book
+  instantly breaks the ENTIRE message. The characters in the book
+  are random, so a substitution produces not "almost correct" text
+  but visually obvious garbage.
+— The recipient SEES that the message is corrupted and understands:
+  interference has occurred.
+
+ACTIONS UPON DETECTING INTERFERENCE:
+
+1. The recipient receives garbage instead of text.
+2. Immediately stop using the compromised book.
+3. Contact the sender via a BACKUP channel and report:
+   "Book compromised. Recreating."
+4. Both parties generate a NEW book, encrypt with Vigenère, exchange.
+5. Communication continues with the new book.
+
+IMPORTANT: The adversary CANNOT substitute a message so that the
+recipient accepts fake text as genuine. The system is self-diagnosing.
+The only thing the adversary can achieve is temporary disruption
+(DoS). The content of the correspondence remains protected.
+
+
+
+14. ADVANCED BOOK MANAGEMENT SCHEMES
+
+
+For maximum protection, it is recommended to use not a single pair
+of books but a rotation system.
+
+14.1. BASIC ROTATION: ONE BOOK PER DAY
+
+— Create 7 book sets (one for each day of the week).
+— Each set: Sender's Book and Recipient's Book.
+— Monday — Set-1. Tuesday — Set-2. And so on.
+— Each set is encrypted with its OWN Vigenère key.
+
+WHAT THIS ACHIEVES:
+Compromise of one day's key reveals correspondence only for that
+day of the week. The other days remain untouched.
+
+14.2. ADVANCED ROTATION: ONE SET PER SESSION
+
+— Create N book sets in advance (e.g., 30 sets).
+— Each set is used ONCE for a single communication session.
+— After the session ends, the set is DESTROYED (delete both books).
+— Next session — next set.
+
+WHAT THIS ACHIEVES:
+Even with full device compromise after a session, the adversary finds
+only used (hole-ridden) books. Communication history is not recovered
+(Amnesia). Future sessions are not compromised (different keys).
+
+
+
+15. TRANSMITTING NEW KEYS VIA A DEPLETED BOOK
+
+
+When a book is nearing depletion (few cells remain), you can transmit
+the parameters of a NEW book directly in an encrypted message:
+
+1. The sender writes a message like:
+   "New book: alphabet=..., key=..., rounds=17. Start tomorrow."
+2. The message is encrypted with the remainder of the OLD book.
+3. The recipient decrypts it and receives the new parameters.
+4. Both parties generate new books, encrypt with the new key, exchange.
+5. The old book is destroyed.
+
+WHAT THIS ACHIEVES:
+The first in-person meeting is needed only ONCE. After that, the system
+is self-sustaining through the secure channel. Keys are transmitted
+inside encrypted messages. The circle is closed.
+
+
+
+16. MANUAL MODE: PAPER-ONLY ENCRYPTION
+
+
+The StrikeCipheeSVA system is designed to operate fully offline,
+without a computer or electricity. All you need is a printed book,
+a pencil, and a ruler.
+
+
+16.1. WHEN THIS IS NEEDED
+
+— No electricity or devices available.
+— Complete isolation from digital traces (no emissions, logs,
+  metadata).
+— Transmission via courier, pigeon post, or voice over radio.
+— The last backup channel when everything else is compromised.
+
+
+16.2. PREPARING A BOOK FOR PRINTING
+
+1. Generate a book in the program (Section 3).
+2. Click "View Book" in the "Book Statistics" section.
+3. Print the contents. Print structure:
+
+   Page 1
+   Row  1: ж Щ ъ Ф ы В а П р 2 ] k L о Q . Д ~ я 7 ...
+   Row  2: U 3 й ш Ё © Ю м ь T + Ж { ч ъ Х 9 ; „ ...
+   ...
+
+4. Create TWO copies: one for yourself, one for the recipient.
+
+5. TRANSFERRING THE BOOK TO THE RECIPIENT
+
+   The book is a random collection of symbols. Without context,
+   it is useless to an outsider. However, during transfer, the book
+   is vulnerable: if an adversary copies it BEFORE communication
+   begins, they will be able to decrypt all future messages.
+
+   IMPORTANT: The first transfer is the safest. No one knows about
+   your connection yet. You are not under surveillance because there
+   is no reason to be. The target of observation does not exist.
+   Use this moment as reliably as possible.
+
+   After the first transfer, in-person meetings are no longer needed.
+   The system then operates autonomously: new books and keys are
+   transmitted inside encrypted messages (Section 15).
+
+   METHOD 1 — IN-PERSON MEETING (most reliable):
+
+   The sender and recipient meet in person. The book is handed over
+   directly. You see the recipient's face. You see that the book
+   reached exactly the right person. No intermediaries, no copies.
+
+   METHOD 2 — DEAD DROP (most anonymous):
+
+   The sender leaves the book at a prearranged location. They send
+   the recipient the coordinates of the hiding spot via an agreed
+   channel. The recipient picks it up. No direct contact. Faces
+   are not seen. Ideal anonymity.
+
+   WARNING: If you are ALREADY under surveillance at the time of
+   the dead drop, the adversary will find the book before the
+   recipient. However, at the first transfer stage, this is unlikely —
+   there is no surveillance yet. After the first transfer, dead drops
+   are no longer needed: the system works autonomously (Section 15).
+
+   METHOD 3 — TRUSTED COURIER (backup):
+
+   If an in-person meeting and a dead drop are both impossible —
+   transfer via a trusted person. This must be someone you trust
+   unconditionally. Not a hired courier. One of your own.
+
+   Requirements:
+   — The book must be in a sealed, opaque envelope.
+   — The trusted person knows: the envelope must not be opened,
+     photographed, scanned, or shown to anyone.
+   — Hand-to-hand transfer only.
+   — After delivery, the recipient confirms receipt.
+   — If the envelope is damaged — the book is compromised.
+     Destroy it. Create a new one.
+
+   REMEMBER: A trusted person is a vulnerability. If there is any
+   doubt — use an in-person meeting or a dead drop.
+
+6. After successful transfer, destroy the digital copy of the book
+   (Section 11.3).
+
+
+16.3. ENCRYPTING BY HAND (sender)
+
+1. Place the printed book in front of you.
+2. On a separate sheet, write your message.
+3. For EACH character of the message:
+
+   a) Find ANY cell in the book with the same character.
+   b) Make sure this cell has not been crossed out yet.
+   c) Write down the coordinates: page:row:position.
+      Example: 3:14:7
+   d) CROSS OUT the cell in your book. Firmly. Forever.
+
+4. Add padding to the standard length (Section 12).
+5. The set of coordinates is your ciphertext. Example:
+   3:14:7, 12:5:33, 7:22:18, 1:41:9, ...
+
+6. Transmit the coordinates to the recipient by any means:
+   — Radio, spoken aloud (numbers are easy to dictate).
+   — A note via courier.
+   — Morse code.
+   — Phone call (dictate aloud, then both cross out cells
+     simultaneously).
+
+
+16.4. DECRYPTING BY HAND (recipient)
+
+1. Place your copy of the book in front of you.
+2. Take the received coordinates.
+3. For EACH coordinate:
+
+   a) Find the cell in the book: page, row, position.
+   b) Read the character. Write it down.
+   c) CROSS OUT the cell. Firmly. Forever.
+
+4. Read the message. Ignore the tail of padding
+   (Section 12 — fixed length).
+
+
+16.5. SYNCHRONIZING BOOKS MANUALLY
+
+In manual mode, it is critically important that the sender and
+recipient cross out the SAME cells. To achieve this:
+
+RULE: The sender ALWAYS searches for the FIRST free cell with
+the needed character by scanning the book IN ORDER:
+
+   Page 1 → Page 2 → ... → last page.
+   On each page: Row 1 → Row 2 → ... → last row.
+   In each row: Position 1 → Position 2 → ... → last position.
+
+By decrypting the coordinates, the recipient automatically crosses
+out the same cells.
+
+Why order matters:
+— The sender cannot use the same cell twice.
+— The recipient is guaranteed to cross out what the sender did.
+— The books remain synchronized.
+
+
+16.6. GENERATING A RANDOM BOOK WITHOUT A COMPUTER
+
+If a computer is unavailable, a random book can be created by hand.
+Effort: a book of 10,000 cells takes several hours of work.
+But the result is a key that is impossible to recover.
+
+METHOD 1 — DICE:
+
+1. Compile an alphabet (e.g., 64 characters).
+2. Number each character from 1 to 64.
+3. For each cell of the book:
+   — Roll two dice (gives 36 possibilities).
+   — Roll again for refinement (36×36 = 1296).
+   — Take the result modulo the alphabet size.
+   — Write the character in the cell.
+
+METHOD 2 — BAG OF TOKENS:
+
+1. Prepare tokens with the characters of the alphabet.
+2. Equal number of tokens for each character.
+3. For each cell: draw a token, write the character,
+   RETURN the token to the bag.
+4. Shake. Next cell.
+
+METHOD 3 — RANDOM NUMBER TABLE:
+
+1. Take a book of random numbers.
+2. Convert each number to a character from your alphabet.
+3. Write them down in sequence.
+
+
+16.7. CHARACTERISTICS OF MANUAL MODE
+
+Book generation in digital mode takes a fraction of a second;
+in manual mode — several hours. But once created, the book works
+equally reliably in both modes.
+
+Encryption and decryption by hand take minutes per message
+(versus instantaneous in digital mode). This is the price for
+a complete absence of digital traces.
+
+Vigenère is not used in manual mode. The book is transferred
+in plain form — but it is meaningless to an outsider. A random
+set of characters without context cannot be read or even
+identified as a key.
+
+The security timer in manual mode is replaced by discipline:
+receive coordinates — decrypt — cross out — put the book away
+in a safe place.
+
+Digital footprint in manual mode is completely absent. No logs,
+no emissions, no metadata. Only paper, pencil, and a voice on
+the air.
+
+The cryptographic strength of manual mode equals digital mode,
+provided the book is random and uncompromised during transfer.
+
+
+16.8. DESTRUCTION
+
+When the book is depleted (all or nearly all cells crossed out):
+
+1. Burn the printout. Completely. To ashes.
+2. Scatter the ashes (do not leave in one place).
+3. Create a new book (Section 3 or 16.6).
+
+A used paper book with holes is just as useless to an adversary
+as a digital one (Section 11.3). But paper can be touched.
+Therefore — burn it.
+
+16.9. LANGUAGE UNIVERSALITY OF THE BOOK
+
+A book generated with the full character set (Russian, English, symbols,
+digits) covers virtually all sounds a human can produce. Russian «А»
+and English «A» are the same sound. Russian «М» and English «M» are the
+same sound. Therefore, the book is not tied to any specific language.
+
+To transmit a message in any language, simply write it in transliteration —
+using characters that convey the same sounds. Pashto, Arabic, Chinese
+(pinyin), Swahili, any other language — all can be written using the
+characters from the book. The book is universal.
+
+16.10. IMPOSSIBILITY OF PROOF AFTER DECRYPTION
+
+Even if an adversary possesses unlimited computing power and brute-forces
+all possible message variants for intercepted coordinates, they will
+obtain thousands of meaningful options: "hello", "attack", "cancel",
+"wait". All are equally possible because the book is random. It contains
+no patterns that could point to the correct variant.
+
+The used cells are destroyed. The information about which of the
+thousands of variants was the real one no longer exists in the Universe.
+It is impossible to prove which message was sent. By any power.
+By any computer. Ever.
+</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="bookViewModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3 id="modalTitle">Просмотр книги</h3>
+        <pre id="modalBookContent" style="white-space: pre-wrap; font-family: monospace; font-size: 12px;"></pre>
+    </div>
+</div>
+
+<script id="timerWorker" type="text/worker">
+    let timerEndTime = null;
+    let intervalId = null;
+    let phase = 'main';
+    const MAIN_SECONDS = 120;
+    const EXTEND_SECONDS = 15;
+
+    self.onmessage = function(e) {
+        const msg = e.data;
+        if (msg.action === 'start') {
+            timerEndTime = msg.endTime;
+            phase = 'main';
+            if (intervalId) clearInterval(intervalId);
+            intervalId = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.ceil((timerEndTime - now) / 1000);
+                if (remaining <= 0 && phase === 'main') {
+                    phase = 'extend';
+                    timerEndTime = Date.now() + EXTEND_SECONDS * 1000;
+                    self.postMessage({ type: 'phaseChange', phase: 'extend', remaining: EXTEND_SECONDS });
+                } else if (remaining <= 0 && phase === 'extend') {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                    self.postMessage({ type: 'expired' });
+                } else {
+                    self.postMessage({ type: 'tick', remaining: Math.max(0, remaining), phase: phase });
+                }
+            }, 500);
+        }
+        if (msg.action === 'extend') {
+            phase = 'main';
+            timerEndTime = Date.now() + MAIN_SECONDS * 1000;
+            self.postMessage({ type: 'extended', remaining: MAIN_SECONDS });
+        }
+        if (msg.action === 'stop') {
+            if (intervalId) clearInterval(intervalId);
+            intervalId = null;
+            timerEndTime = null;
+        }
+    };
+</script>
+
+<script>
+    (function(){
+        let db = null;
+        const DB_NAME = 'StrikeCipheeDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'books';
+        const PROTECTED_STORE = 'protected_books';
+
+        let currentEncryptBook = null;
+        let currentDecryptBook = null;
+        let currentProtectBook = null;
+        let stopFlag = false;
+        let currentLang = 'ru';
+        let isDarkTheme = true;
+
+        const MAIN_TIMER_SECONDS = 120;
+        const EXTEND_TIMER_SECONDS = 15;
+        let securityTimerRemaining = MAIN_TIMER_SECONDS;
+        let securityTimerPhase = 'main';
+        let extendPassword = '';
+        let autoEncryptParamsList = [];
+        let timerWorker = null;
+
+        let protectFieldsTimer = null;
+        const PROTECT_FIELDS_SECONDS = 60;
+
+        const DEFAULT_ALPHABET = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?-:;()[]{}'\"@#$%^&*+=<>/\\|~`•√π÷×¶∆£€$¢°©®™℅абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?-:;()[]{}'\"@#$%^&*+=<>/\\|~`•√π÷×¶∆£€$¢°©®™℅";
+        const DEFAULT_KEY = "Мама мыла раму, а папа — читал газету Правда за 1987-й год.";
+        const DEFAULT_ROUNDS = "17";
+
+        const translations = {
+            ru: {
+                ready: "Готов", cancel: "ОТМЕНА", execute: "ВЫПОЛНИТЬ", encrypt: "ЗАШИФРОВАТЬ", decrypt: "РАСШИФРОВАТЬ",
+                refresh: "Обновить", load: "Загрузить", copy: "Копировать", save: "Сохранить", clear: "Очистить",
+                paste: "Вставить", loadFile: "Загрузить",
+                manageTitle: "Управление книгами", deleteWarning: "Внимание! Удаление книг приведёт к полной потере данных.",
+                selectBookLabel: "Выберите книгу:", deleteSelectedBtn: "УДАЛИТЬ ВЫБРАННУЮ КНИГУ", deleteAllBtn: "УДАЛИТЬ ВСЕ КНИГИ",
+                createBookTitle: "Создание книги", bookNameLabel: "Имя книги:", pagesLabel: "Страниц:", rowsLabel: "Строк:", colsLabel: "Символов в строке:",
+                charsForGenLabel: "Символы для генерации:", chRussianLabel: "Русские (А-я)", chEnglishLabel: "English (A-z)",
+                chSymbolsLabel: "Символы", chSpaceLabel: "Пробелы", cryptoLabel: "Крипто-генератор", manualLabel: "Свой текст (1 стр.)", manualTextLabel: "Свой текст:",
+                createBtn: "СОЗДАТЬ КНИГУ", importBookBtn: "Импорт обычной книги (JSON)", exportBookBtn: "Экспорт обычной книги (JSON)",
+                exportBookLabel: "Книга для экспорта:",
+                encryptTitle: "Шифрование", encryptBookLabel: "Книга:", messageLabel: "Сообщение:", cipherLabel: "Шифр:",
+                decryptTitle: "Дешифрование", decryptBookLabel: "Книга:", cipherInputLabel: "Шифр:", decryptResultLabel: "Результат:",
+                protectTitle: "Защита книги (Виженер)", protectEncryptRadioLabel: "ЗАШИФРОВАТЬ КНИГУ", protectDecryptRadioLabel: "РАСШИФРОВАТЬ КНИГУ",
+                protectBookLabelEncrypt: "Книга (из папки books):", protectBookLabelDecrypt: "Книга (из папки protected_books):",
+                protectAlphabetLabel: "Алфавит:", restoreAlphabetBtn: "Восстановить", shuffleAlphabetBtn: "Перемешать",
+                protectKeyLabel: "Ключевое слово:", protectRoundsLabel: "Раунды:", exportEncryptedBtn: "Экспорт зашифрованной книги",
+                exportProtectedBookLabel: "Зашифрованная книга для экспорта:",
+                importProtectedBtn: "Импорт защищённой книги",
+                statsTitle: "Статистика книги", statsBookLabel: "Книга:", showStatsBtn: "Показать", viewFullBookBtn: "Просмотреть книгу", backupBookBtn: "Резервная копия",
+                bookLoaded: "Загружена", bookCreated: "создана", symbols: "Символов", encrypted: "Зашифровано", decrypted: "Расшифровано",
+                timerLabel: "Таймер:", timerSec: "сек", timerClose: "Закрыть", timerExtendCancel: "Отмена",
+                timerWrongPassword: "Неверный пароль", timerExpired: "Таймер истёк. Книги зашифрованы.",
+                vkLabelText: "Виртуальная клавиатура", revealBtnText: "👁 Удерживать для просмотра",
+                deletedSelected: "Удалена:",
+                encryptMsgLoad: "Загрузить", encryptMsgPaste: "Вставить", encryptMsgCopy: "Копировать", encryptMsgClear: "Очистить",
+                encryptResultCopy: "Копировать", encryptResultSave: "Сохранить", encryptResultClear: "Очистить",
+                decryptCipherLoad: "Загрузить", decryptCipherPaste: "Вставить",
+                decryptCipherCopy: "Копировать", decryptCipherClear: "Очистить", decryptResultCopy: "Копировать", decryptResultClear: "Очистить",
+            },
+            en: {
+                ready: "Ready", cancel: "CANCEL", execute: "EXECUTE", encrypt: "ENCRYPT", decrypt: "DECRYPT",
+                refresh: "Refresh", load: "Load", copy: "Copy", save: "Save", clear: "Clear",
+                paste: "Paste", loadFile: "Load",
+                manageTitle: "Manage Books", deleteWarning: "Warning! Deleting books will permanently erase all data.",
+                selectBookLabel: "Select book:", deleteSelectedBtn: "DELETE SELECTED BOOK", deleteAllBtn: "DELETE ALL BOOKS",
+                createBookTitle: "Create Book", bookNameLabel: "Book name:", pagesLabel: "Pages:", rowsLabel: "Rows:", colsLabel: "Chars per row:",
+                charsForGenLabel: "Characters for generation:", chRussianLabel: "Russian (A-ya)", chEnglishLabel: "English (A-z)",
+                chSymbolsLabel: "Symbols", chSpaceLabel: "Spaces", cryptoLabel: "Crypto generator", manualLabel: "Custom text", manualTextLabel: "Custom text:",
+                createBtn: "CREATE BOOK", importBookBtn: "Import regular book (JSON)", exportBookBtn: "Export regular book (JSON)",
+                exportBookLabel: "Book for export:",
+                encryptTitle: "Encrypt", encryptBookLabel: "Book:", messageLabel: "Message:", cipherLabel: "Ciphertext:",
+                decryptTitle: "Decrypt", decryptBookLabel: "Book:", cipherInputLabel: "Ciphertext:", decryptResultLabel: "Result:",
+                protectTitle: "Protect Book (Vigenère)", protectEncryptRadioLabel: "ENCRYPT BOOK", protectDecryptRadioLabel: "DECRYPT BOOK",
+                protectBookLabelEncrypt: "Book (from books folder):", protectBookLabelDecrypt: "Book (from protected_books folder):",
+                protectAlphabetLabel: "Alphabet:", restoreAlphabetBtn: "Restore", shuffleAlphabetBtn: "Shuffle",
+                protectKeyLabel: "Key phrase:", protectRoundsLabel: "Rounds:", exportEncryptedBtn: "Export encrypted book",
+                exportProtectedBookLabel: "Encrypted book for export:",
+                importProtectedBtn: "Import protected book",
+                statsTitle: "Book Statistics", statsBookLabel: "Book:", showStatsBtn: "Show", viewFullBookBtn: "View Book", backupBookBtn: "Backup",
+                bookLoaded: "Loaded", bookCreated: "created", symbols: "Characters", encrypted: "Encrypted", decrypted: "Decrypted",
+                timerLabel: "Timer:", timerSec: "sec", timerClose: "Close", timerExtendCancel: "Cancel",
+                timerWrongPassword: "Wrong password", timerExpired: "Timer expired. Books encrypted.",
+                vkLabelText: "Virtual keyboard", revealBtnText: "👁 Hold to reveal",
+                deletedSelected: "Deleted:",
+                encryptMsgLoad: "Load", encryptMsgPaste: "Paste", encryptMsgCopy: "Copy", encryptMsgClear: "Clear",
+                encryptResultCopy: "Copy", encryptResultSave: "Save", encryptResultClear: "Clear",
+                decryptCipherLoad: "Load", decryptCipherPaste: "Paste",
+                decryptCipherCopy: "Copy", decryptCipherClear: "Clear", decryptResultCopy: "Copy", decryptResultClear: "Clear",
+            }
+        };
+
+        function t(key) { return translations[currentLang][key] || key; }
+
+        // === TIMER WORKER ===
+        function initTimerWorker() {
+            const blob = new Blob([document.getElementById('timerWorker').textContent], { type: 'application/javascript' });
+            timerWorker = new Worker(URL.createObjectURL(blob));
+            timerWorker.onmessage = function(e) {
+                const msg = e.data;
+                if (msg.type === 'tick') {
+                    securityTimerRemaining = msg.remaining;
+                    securityTimerPhase = msg.phase;
+                    document.getElementById('timerValue').innerText = securityTimerRemaining;
+                    if (securityTimerPhase === 'main' && securityTimerRemaining <= 30) {
+                        document.getElementById('timerValue').style.color = '#ff9900';
+                    } else if (securityTimerPhase === 'extend') {
+                        document.getElementById('timerValue').style.color = securityTimerRemaining <= 5 ? '#ff0000' : '#ff4444';
+                        document.getElementById('extendPasswordBlock').style.display = 'flex';
+                    } else {
+                        document.getElementById('timerValue').style.color = 'var(--warning-color)';
+                    }
+                }
+                if (msg.type === 'phaseChange') {
+                    securityTimerPhase = 'extend';
+                    securityTimerRemaining = msg.remaining;
+                    document.getElementById('extendPasswordBlock').style.display = 'flex';
+                    document.getElementById('extendPasswordInput').value = '';
+                    document.getElementById('extendPasswordInput').focus();
+                    document.getElementById('timerValue').style.color = '#ff4444';
+                    document.getElementById('timerValue').innerText = securityTimerRemaining;
+                }
+                if (msg.type === 'extended') {
+                    securityTimerPhase = 'main';
+                    securityTimerRemaining = msg.remaining;
+                    document.getElementById('timerValue').style.color = 'var(--warning-color)';
+                    document.getElementById('timerValue').innerText = securityTimerRemaining;
+                    document.getElementById('extendPasswordBlock').style.display = 'none';
+                }
+                if (msg.type === 'expired') {
+                    securityTimerRemaining = 0;
+                    document.getElementById('timerValue').innerText = '0';
+                    encryptAllBooksAndHideBar(true);
+                }
+            };
+        }
+
+        function startTimer() {
+            securityTimerPhase = 'main';
+            securityTimerRemaining = MAIN_TIMER_SECONDS;
+            document.getElementById('securityTimerBar').style.display = 'flex';
+            document.getElementById('extendPasswordBlock').style.display = 'none';
+            document.getElementById('timerValue').style.color = 'var(--warning-color)';
+            document.getElementById('timerValue').innerText = securityTimerRemaining;
+            document.getElementById('timerLabel').innerText = t('timerLabel');
+            document.getElementById('timerSecLabel').innerText = t('timerSec');
+            document.getElementById('closeTimerBtn').innerText = t('timerClose');
+            document.getElementById('extendCancelBtn').innerText = t('timerExtendCancel');
+            if (timerWorker) {
+                timerWorker.postMessage({ action: 'start', endTime: Date.now() + MAIN_TIMER_SECONDS * 1000 });
+            }
+        }
+
+        function extendTimer() {
+            securityTimerPhase = 'main';
+            securityTimerRemaining = MAIN_TIMER_SECONDS;
+            document.getElementById('timerValue').style.color = 'var(--warning-color)';
+            document.getElementById('timerValue').innerText = securityTimerRemaining;
+            document.getElementById('extendPasswordBlock').style.display = 'none';
+            if (timerWorker) { timerWorker.postMessage({ action: 'extend' }); }
+        }
+
+        function stopTimer() {
+            if (timerWorker) { timerWorker.postMessage({ action: 'stop' }); }
+            document.getElementById('securityTimerBar').style.display = 'none';
+            document.getElementById('extendPasswordBlock').style.display = 'none';
+        }
+
+        function resetProtectFields() {
+            document.getElementById('protectAlphabet').value = DEFAULT_ALPHABET;
+            document.getElementById('protectKey').value = DEFAULT_KEY;
+            document.getElementById('protectRounds').value = DEFAULT_ROUNDS;
+        }
+        function startProtectFieldsTimer() {
+            if(protectFieldsTimer) clearTimeout(protectFieldsTimer);
+            protectFieldsTimer = setTimeout(() => { resetProtectFields(); protectFieldsTimer = null; }, PROTECT_FIELDS_SECONDS * 1000);
+        }
+        function setupProtectFieldsWatchers() {
+            ['protectAlphabet','protectKey','protectRounds'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.addEventListener('input', startProtectFieldsTimer); el.addEventListener('change', startProtectFieldsTimer); }
+            });
+        }
+
+        function startOrResetTimer(password) {
+            if(!extendPassword && password) extendPassword = password;
+            startTimer();
+        }
+
+        async function saveBookImmediately(bookToSave) {
+            const params = autoEncryptParamsList.find(p => p.storeName === bookToSave.name);
+            if (!params) return;
+            try {
+                const { alphabet, key, rounds } = params;
+                const bookCopy = JSON.parse(JSON.stringify(bookToSave));
+                const allChars = bookCopy.grid.flat(2);
+                const idxs = allChars.map(ch => ch === null ? -1 : (alphabet.indexOf(ch) === -1 ? 0 : alphabet.indexOf(ch)));
+                const keyIdx = key.split('').map(ch => alphabet.indexOf(ch) === -1 ? 0 : alphabet.indexOf(ch));
+                let cur = idxs;
+                for(let r = 0; r < rounds; r++) {
+                    let next = [];
+                    for(let i = 0; i < cur.length; i++) {
+                        if (cur[i] === -1) next.push(-1);
+                        else next.push((cur[i] + keyIdx[i % keyIdx.length]) % alphabet.length);
+                    }
+                    cur = next;
+                }
+                const newChars = cur.map(i => i === -1 ? null : alphabet[i]);
+                let idx = 0;
+                for(let p = 0; p < bookCopy.grid.length; p++)
+                    for(let r = 0; r < bookCopy.grid[0].length; r++)
+                        for(let c = 0; c < bookCopy.grid[0][0].length; c++)
+                            bookCopy.grid[p][r][c] = newChars[idx++];
+                await saveBook(PROTECTED_STORE, bookCopy);
+            } catch(e) { console.error('Ошибка сохранения книги:', e); }
+        }
+
+        async function encryptAllBooksAndHideBar(showAlert = false) {
+            for (const params of autoEncryptParamsList) {
+                let bookToSave = currentEncryptBook && currentEncryptBook.name === params.storeName ? currentEncryptBook :
+                    (currentDecryptBook && currentDecryptBook.name === params.storeName ? currentDecryptBook : null);
+                if(!bookToSave) continue;
+                try {
+                    const {alphabet, key, rounds} = params;
+                    const allChars = bookToSave.grid.flat(2);
+                    const idxs = allChars.map(ch => ch===null ? -1 : (alphabet.indexOf(ch)===-1 ? 0 : alphabet.indexOf(ch)));
+                    const keyIdx = key.split('').map(ch => alphabet.indexOf(ch)===-1 ? 0 : alphabet.indexOf(ch));
+                    let cur = idxs;
+                    for(let r=0;r<rounds;r++) { let next=[]; for(let i=0;i<cur.length;i++) next.push(cur[i]===-1 ? -1 : (cur[i]+keyIdx[i%keyIdx.length])%alphabet.length); cur=next; }
+                    const newChars = cur.map(i => i===-1 ? null : alphabet[i]);
+                    let idx=0; for(let p=0;p<bookToSave.grid.length;p++) for(let r=0;r<bookToSave.grid[0].length;r++) for(let c=0;c<bookToSave.grid[0][0].length;c++) bookToSave.grid[p][r][c] = newChars[idx++];
+                    await saveBook(PROTECTED_STORE, bookToSave);
+                } catch(e) { console.error(e); }
+            }
+            currentEncryptBook = null; currentDecryptBook = null; autoEncryptParamsList = []; extendPassword = '';
+            stopTimer();
+            ['encryptMsg','encryptResult','decryptCipher','decryptResult'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+            const encryptInfo = document.getElementById('encryptBookInfo'); if(encryptInfo) encryptInfo.innerText = '';
+            const decryptInfo = document.getElementById('decryptBookInfo'); if(decryptInfo) decryptInfo.innerText = '';
+            const encryptCounter = document.getElementById('encryptCharCounter'); if(encryptCounter) encryptCounter.textContent = `${t('symbols')}: 0`;
+            const decryptCounter = document.getElementById('decryptCharCounter'); if(decryptCounter) decryptCounter.textContent = `${t('symbols')}: 0`;
+            updateBookSelects();
+            if(showAlert) alert(t('timerExpired'));
+        }
+
+        function confirmExtend() {
+            if(document.getElementById('extendPasswordInput').value === extendPassword) { extendTimer(); }
+            else { alert(t('timerWrongPassword')); document.getElementById('extendPasswordInput').value = ''; document.getElementById('extendPasswordInput').focus(); }
+        }
+
+        async function loadProtectedBookForUse(bookName, target) {
+            const protectedBook = await loadBook(PROTECTED_STORE, bookName);
+            if(!protectedBook) { alert('Книга не найдена'); return; }
+            const alphabet = prompt('Алфавит:', document.getElementById('protectAlphabet').value || '');
+            if(!alphabet) return;
+            const key = prompt('Ключ:', '');
+            if(!key) return;
+            const roundsStr = prompt('Раунды:', '17');
+            if(!roundsStr) return;
+            const rounds = parseInt(roundsStr) || 17;
+            if(!extendPassword) {
+                const password = prompt('Введите 4-символьный пароль продления:', '');
+                if(!password || password.length !== 4) { alert('Пароль должен быть 4 символа'); return; }
+                extendPassword = password;
+            }
+            const bookCopy = JSON.parse(JSON.stringify(protectedBook));
+            const alphabetClean = [...new Set(alphabet.split(''))].join('');
+            const allChars = bookCopy.grid.flat(2);
+            const idxs = allChars.map(ch => ch===null ? -1 : (alphabetClean.indexOf(ch)===-1 ? 0 : alphabetClean.indexOf(ch)));
+            const keyIdx = key.split('').map(ch => alphabetClean.indexOf(ch)===-1 ? 0 : alphabetClean.indexOf(ch));
+            let cur = idxs;
+            for(let r=0;r<rounds;r++) { let next=[]; for(let i=0;i<cur.length;i++) next.push(cur[i]===-1 ? -1 : (cur[i]-keyIdx[i%keyIdx.length]+alphabetClean.length)%alphabetClean.length); cur=next; }
+            const newChars = cur.map(i => i===-1 ? null : alphabetClean[i]);
+            let idx=0; for(let p=0;p<bookCopy.grid.length;p++) for(let r=0;r<bookCopy.grid[0].length;r++) for(let c=0;c<bookCopy.grid[0][0].length;c++) bookCopy.grid[p][r][c] = newChars[idx++];
+            const existingIdx = autoEncryptParamsList.findIndex(p => p.storeName === bookName);
+            const params = { alphabet: alphabetClean, key, rounds, storeName: bookName };
+            if(existingIdx >= 0) autoEncryptParamsList[existingIdx] = params; else autoEncryptParamsList.push(params);
+            if(target === 'encrypt') { currentEncryptBook = bookCopy; document.getElementById('encryptBookInfo').innerText = `${t('bookLoaded')}: ${bookCopy.name}`; }
+            else { currentDecryptBook = bookCopy; document.getElementById('decryptBookInfo').innerText = `${t('bookLoaded')}: ${bookCopy.name}`; }
+            startOrResetTimer(null);
+        }
+
+        // === VIRTUAL KEYBOARD ===
+        const vkState = { encrypt: { mode: 'lower' } };
+        const vkLayouts = {
+            lower: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'.split(''),
+            upper: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split(''),
+            latinLower: 'abcdefghijklmnopqrstuvwxyz'.split(''),
+            latinUpper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+            digits: '0123456789'.split(''),
+            symbols: '.,!?-:;()№%*+=/@#$&'.split(''),
+        };
+        function shuffleArray(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(crypto.getRandomValues(new Uint32Array(1))[0]%(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+        function renderVK() {
+            const chars = shuffleArray(vkLayouts[vkState.encrypt.mode] || vkLayouts.lower);
+            const grid = document.getElementById('vkGridEncrypt');
+            grid.innerHTML = chars.map(ch => `<button class="vk-key">${ch}</button>`).join('');
+            grid.querySelectorAll('.vk-key').forEach(btn => { btn.onclick = () => { const ta = document.getElementById('encryptMsg'); ta.value += btn.textContent; ta.dispatchEvent(new Event('input')); }; });
+        }
+        function setupVK() {
+            document.getElementById('useVirtualKeyboardEncrypt').onchange = function() {
+                document.getElementById('virtualKeyboardEncrypt').style.display = this.checked ? 'block' : 'none';
+                if(this.checked) renderVK();
+            };
+            document.getElementById('vkBackspaceEncrypt').onclick = () => { const ta=document.getElementById('encryptMsg'); ta.value=ta.value.slice(0,-1); ta.dispatchEvent(new Event('input')); };
+            document.getElementById('vkSpaceEncrypt').onclick = () => { const ta=document.getElementById('encryptMsg'); ta.value+=' '; ta.dispatchEvent(new Event('input')); };
+            document.getElementById('vkClearEncrypt').onclick = () => { document.getElementById('encryptMsg').value=''; document.getElementById('encryptMsg').dispatchEvent(new Event('input')); };
+            document.getElementById('vkToggleCaseEncrypt').onclick = () => {
+                const s=vkState.encrypt;
+                if(s.mode==='lower') s.mode='upper'; else if(s.mode==='upper') s.mode='latinLower';
+                else if(s.mode==='latinLower') s.mode='latinUpper'; else if(s.mode==='latinUpper') s.mode='symbols'; else s.mode='lower';
+                renderVK();
+            };
+            document.getElementById('vkLatinEncrypt').onclick = () => { vkState.encrypt.mode='latinLower'; renderVK(); };
+            document.getElementById('vkDigitsEncrypt').onclick = () => { vkState.encrypt.mode='digits'; renderVK(); };
+        }
+
+        // === MASKED TEXT ===
+        function setupRevealButton(btnId, textareaId) {
+            const btn = document.getElementById(btnId);
+            const ta = document.getElementById(textareaId);
+            let revealTimeout = null;
+            btn.addEventListener('mousedown', () => { ta.classList.add('reveal'); revealTimeout = setTimeout(() => ta.classList.remove('reveal'), 2000); });
+            btn.addEventListener('mouseup', () => { ta.classList.remove('reveal'); if(revealTimeout) clearTimeout(revealTimeout); });
+            btn.addEventListener('mouseleave', () => { ta.classList.remove('reveal'); if(revealTimeout) clearTimeout(revealTimeout); });
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); ta.classList.add('reveal'); revealTimeout = setTimeout(() => ta.classList.remove('reveal'), 2000); });
+            btn.addEventListener('touchend', () => { ta.classList.remove('reveal'); if(revealTimeout) clearTimeout(revealTimeout); });
+            btn.addEventListener('touchcancel', () => { ta.classList.remove('reveal'); if(revealTimeout) clearTimeout(revealTimeout); });
+        }
+
+        // === UTILS ===
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                if(db) { resolve(db); return; }
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => { db = request.result; resolve(db); };
+                request.onupgradeneeded = (e) => {
+                    const d=e.target.result;
+                    if(!d.objectStoreNames.contains(STORE_NAME)) d.createObjectStore(STORE_NAME,{keyPath:'name'});
+                    if(!d.objectStoreNames.contains(PROTECTED_STORE)) d.createObjectStore(PROTECTED_STORE,{keyPath:'name'});
+                };
+            });
+        }
+        async function saveBook(store, data) { const database = await openDB(); return new Promise((resolve, reject) => { const tx = database.transaction([store], 'readwrite'); tx.objectStore(store).put(data).onsuccess = resolve; tx.onerror = () => reject(tx.error); }); }
+        async function loadBook(store, name) { const database = await openDB(); return new Promise((resolve, reject) => { const tx = database.transaction([store], 'readonly'); const req = tx.objectStore(store).get(name); req.onsuccess = () => resolve(req.result || null); req.onerror = () => reject(req.error); }); }
+        async function getAllBooks(store) { const database = await openDB(); return new Promise((resolve, reject) => { const tx = database.transaction([store], 'readonly'); tx.objectStore(store).getAll().onsuccess = (e) => resolve(e.target.result || []); tx.onerror = () => reject(tx.error); }); }
+        async function deleteAllBooks() { const database = await openDB(); await new Promise((res) => { const tx = database.transaction([STORE_NAME], 'readwrite'); tx.objectStore(STORE_NAME).clear().onsuccess = res; }); await new Promise((res) => { const tx = database.transaction([PROTECTED_STORE], 'readwrite'); tx.objectStore(PROTECTED_STORE).clear().onsuccess = res; }); }
+        function getRandomChar(charset) { const arr = new Uint32Array(1); crypto.getRandomValues(arr); return charset[arr[0] % charset.length]; }
+        function getCharsFromSettings() { let s=''; if(document.getElementById('chRussian').checked)s+='абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'; if(document.getElementById('chEnglish').checked)s+='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; if(document.getElementById('chSymbols').checked)s+='0123456789.,!?-:;()[]{}\'"@#$%^&*+=<>/\\|~`•√π÷×¶∆£€$¢°©®™℅'; if(document.getElementById('chSpace').checked)s+=' '; return s; }
+        function filterTextBySet(text, allowedSet) { return text.split('').filter(ch => allowedSet.has(ch)).join(''); }
+        function getSkippedChars(text, allowedSet) { const skipped = new Set(); for(const ch of text) if(!allowedSet.has(ch)) skipped.add(ch); return [...skipped]; }
+        function getProtectFolder() { return document.getElementById('protectEncryptRadio').checked ? 'books' : 'protected_books'; }
+        function escapeHtml(s) { return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+        function rollbackChanges(grid, used, positions) { for(let [p,r,c] of positions) { used[p][r][c]=false; grid[p][r][c]=null; } }
+
+        // === КОПИРОВАНИЕ И ВСТАВКА (С ЗАПАСНЫМИ МЕТОДАМИ ДЛЯ МОБИЛЬНЫХ) ===
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Скопировано');
+            } catch (e) {
+                alert('Не удалось скопировать. Выделите текст и скопируйте вручную.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function copyFromTextarea(id) {
+            const t = document.getElementById(id).value;
+            if (!t) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t)
+                    .then(() => alert('Скопировано'))
+                    .catch(() => fallbackCopy(t));
+            } else {
+                fallbackCopy(t);
+            }
+        }
+
+        function fallbackPaste(id) {
+            const target = document.getElementById(id);
+            const overlay = document.createElement('textarea');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '10%';
+            overlay.style.left = '5%';
+            overlay.style.width = '90%';
+            overlay.style.height = '30%';
+            overlay.style.zIndex = '9999';
+            overlay.style.background = 'var(--bg-input, #fff)';
+            overlay.style.color = 'var(--text-primary, #000)';
+            overlay.style.border = '2px solid var(--warning-color, red)';
+            overlay.style.borderRadius = '14px';
+            overlay.style.padding = '12px';
+            overlay.style.fontSize = '1rem';
+            overlay.placeholder = 'Вставьте текст сюда и нажмите Готово';
+
+            const btn = document.createElement('button');
+            btn.textContent = 'Готово';
+            btn.style.position = 'fixed';
+            btn.style.bottom = '5%';
+            btn.style.left = '50%';
+            btn.style.transform = 'translateX(-50%)';
+            btn.style.zIndex = '10000';
+            btn.style.padding = '12px 24px';
+            btn.style.fontSize = '1.1rem';
+            btn.style.background = 'var(--btn-bg, #3b3f5c)';
+            btn.style.color = '#fff';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '40px';
+
+            btn.onclick = () => {
+                target.value = overlay.value;
+                target.dispatchEvent(new Event('input'));
+                document.body.removeChild(overlay);
+                document.body.removeChild(btn);
+            };
+
+            document.body.appendChild(overlay);
+            document.body.appendChild(btn);
+            overlay.focus();
+        }
+
+        function pasteToTextarea(id) {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText()
+                    .then(t => { document.getElementById(id).value = t; })
+                    .catch(() => fallbackPaste(id));
+            } else {
+                fallbackPaste(id);
+            }
+        }
+
+        async function updateBookSelects() {
+            const books = await getAllBooks(STORE_NAME); const pbooks = await getAllBooks(PROTECTED_STORE);
+            const names = books.map(b => b.name); const pnames = pbooks.map(b => b.name);
+            const setOpts = (sel, arr) => { sel.innerHTML = arr.map(n => `<option>${escapeHtml(n)}</option>`).join(''); if(arr.length) sel.value = arr[0]; };
+            setOpts(document.getElementById('encryptBookSelect'), pnames);
+            setOpts(document.getElementById('decryptBookSelect'), pnames);
+            setOpts(document.getElementById('statsBookSelect'), pnames);
+            setOpts(document.getElementById('protectBookSelect'), getProtectFolder()==='books'?names:pnames);
+            setOpts(document.getElementById('exportBookSelect'), names);
+            setOpts(document.getElementById('exportProtectedBookSelect'), pnames);
+            document.getElementById('deleteStatus').innerText = `Обычных: ${names.length}, защищённых: ${pnames.length}`;
+            updateManageBookSelect();
+        }
+
+        async function updateManageBookSelect() {
+            const books = await getAllBooks(STORE_NAME);
+            const pbooks = await getAllBooks(PROTECTED_STORE);
+            const allBooks = [...books.map(b => ({ name: b.name, store: STORE_NAME, type: 'обычная' })), ...pbooks.map(b => ({ name: b.name, store: PROTECTED_STORE, type: 'защищённая' }))];
+            const sel = document.getElementById('manageBookSelect');
+            const typeLabels = { 'обычная': 'обычная', 'защищённая': 'защищённая' };
+            if (currentLang === 'en') { typeLabels['обычная'] = 'regular'; typeLabels['защищённая'] = 'protected'; }
+            sel.innerHTML = allBooks.map(b => `<option value="${escapeHtml(b.name)}" data-store="${b.store}">${escapeHtml(b.name)} (${typeLabels[b.type]})</option>`).join('');
+        }
+
+        function updateProtectBookLabel() {
+            const lbl=document.getElementById('protectBookLabel');
+            if(lbl) lbl.innerText = document.getElementById('protectEncryptRadio').checked ? t('protectBookLabelEncrypt') : t('protectBookLabelDecrypt');
+            updateBookSelects();
+        }
+
+        function updateAllTexts() {
+            document.getElementById('manageTitle').innerText = t('manageTitle');
+            document.getElementById('deleteWarning').innerText = t('deleteWarning');
+            document.getElementById('selectBookLabel').innerText = t('selectBookLabel');
+            document.getElementById('deleteSelectedBookBtn').innerText = t('deleteSelectedBtn');
+            document.getElementById('deleteAllBooksBtn').innerText = t('deleteAllBtn');
+            document.getElementById('createBookTitle').innerText = t('createBookTitle');
+            document.getElementById('bookNameLabel').innerText = t('bookNameLabel');
+            document.getElementById('pagesLabel').innerText = t('pagesLabel');
+            document.getElementById('rowsLabel').innerText = t('rowsLabel');
+            document.getElementById('colsLabel').innerText = t('colsLabel');
+            document.getElementById('charsForGenLabel').innerText = t('charsForGenLabel');
+            document.getElementById('chRussianLabel').innerText = t('chRussianLabel');
+            document.getElementById('chEnglishLabel').innerText = t('chEnglishLabel');
+            document.getElementById('chSymbolsLabel').innerText = t('chSymbolsLabel');
+            document.getElementById('chSpaceLabel').innerText = t('chSpaceLabel');
+            document.getElementById('cryptoLabel').innerText = t('cryptoLabel');
+            document.getElementById('manualLabel').innerText = t('manualLabel');
+            document.getElementById('manualTextLabel').innerText = t('manualTextLabel');
+            document.getElementById('createBookBtn').innerText = t('createBtn');
+            document.getElementById('cancelGenBtn').innerText = t('cancel');
+            document.getElementById('importBookBtn').innerText = t('importBookBtn');
+            document.getElementById('exportBookLabel').innerText = t('exportBookLabel');
+            document.getElementById('exportBookBtn').innerText = t('exportBookBtn');
+            document.getElementById('encryptTitle').innerText = t('encryptTitle');
+            document.getElementById('encryptBookLabel').innerText = t('encryptBookLabel');
+            document.getElementById('loadEncryptBook').innerText = t('load');
+            document.getElementById('refreshEncryptBooks').innerText = t('refresh');
+            document.getElementById('vkLabelEncrypt').innerText = t('vkLabelText');
+            document.getElementById('messageLabel').innerText = t('messageLabel');
+            document.getElementById('encryptRevealBtn').innerText = t('revealBtnText');
+            document.getElementById('encryptMsgLoad').innerText = t('encryptMsgLoad');
+            document.getElementById('encryptMsgPaste').innerText = t('encryptMsgPaste');
+            document.getElementById('encryptMsgCopy').innerText = t('encryptMsgCopy');
+            document.getElementById('encryptMsgClear').innerText = t('encryptMsgClear');
+            document.getElementById('doEncryptBtn').innerText = t('encrypt');
+            document.getElementById('cancelEncryptBtn').innerText = t('cancel');
+            document.getElementById('cipherLabel').innerText = t('cipherLabel');
+            document.getElementById('encryptResultCopy').innerText = t('encryptResultCopy');
+            document.getElementById('encryptResultSave').innerText = t('encryptResultSave');
+            document.getElementById('encryptResultClear').innerText = t('encryptResultClear');
+            document.getElementById('decryptTitle').innerText = t('decryptTitle');
+            document.getElementById('decryptBookLabel').innerText = t('decryptBookLabel');
+            document.getElementById('loadDecryptBook').innerText = t('load');
+            document.getElementById('refreshDecryptBooks').innerText = t('refresh');
+            document.getElementById('cipherInputLabel').innerText = t('cipherInputLabel');
+            document.getElementById('decryptCipherLoad').innerText = t('decryptCipherLoad');
+            document.getElementById('decryptCipherPaste').innerText = t('decryptCipherPaste');
+            document.getElementById('decryptCipherCopy').innerText = t('decryptCipherCopy');
+            document.getElementById('decryptCipherClear').innerText = t('decryptCipherClear');
+            document.getElementById('doDecryptBtn').innerText = t('decrypt');
+            document.getElementById('cancelDecryptBtn').innerText = t('cancel');
+            document.getElementById('decryptResultLabel').innerText = t('decryptResultLabel');
+            document.getElementById('decryptRevealBtn').innerText = t('revealBtnText');
+            document.getElementById('decryptResultCopy').innerText = t('decryptResultCopy');
+            document.getElementById('decryptResultClear').innerText = t('decryptResultClear');
+            document.getElementById('protectTitle').innerText = t('protectTitle');
+            document.getElementById('protectEncryptRadioLabel').innerText = t('protectEncryptRadioLabel');
+            document.getElementById('protectDecryptRadioLabel').innerText = t('protectDecryptRadioLabel');
+            document.getElementById('protectAlphabetLabel').innerText = t('protectAlphabetLabel');
+            document.getElementById('protectAlphabetRestore').innerText = t('restoreAlphabetBtn');
+            document.getElementById('protectAlphabetShuffle').innerText = t('shuffleAlphabetBtn');
+            document.getElementById('protectKeyLabel').innerText = t('protectKeyLabel');
+            document.getElementById('protectRoundsLabel').innerText = t('protectRoundsLabel');
+            document.getElementById('execProtect').innerText = t('execute');
+            document.getElementById('cancelProtectBtn').innerText = t('cancel');
+            document.getElementById('exportEncryptedBookBtn').innerText = t('exportEncryptedBtn');
+            document.getElementById('exportProtectedBookLabel').innerText = t('exportProtectedBookLabel');
+            document.getElementById('importProtectedBookBtn').innerText = t('importProtectedBtn');
+            document.getElementById('statsTitle').innerText = t('statsTitle');
+            document.getElementById('statsBookLabel').innerText = t('statsBookLabel');
+            document.getElementById('showStatsBtn').innerText = t('showStatsBtn');
+            document.getElementById('viewFullBookBtn').innerText = t('viewFullBookBtn');
+            document.getElementById('backupBookBtn').innerText = t('backupBookBtn');
+            document.getElementById('encryptCharCounter').textContent = `${t('symbols')}: ${document.getElementById('encryptMsg').value.length}`;
+            document.getElementById('decryptCharCounter').textContent = `${t('symbols')}: ${document.getElementById('decryptResult').value.length}`;
+            updateProtectBookLabel();
+        }
+
+        function toggleTheme() { isDarkTheme=!isDarkTheme; document.body.classList.toggle('light-theme',!isDarkTheme); document.getElementById('themeToggleBtn').innerText = isDarkTheme?'🌙':'☀️'; }
+        function loadFileToTextarea(id) { const inp = document.createElement('input'); inp.type='file'; inp.accept='.txt'; inp.onchange = e => { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>document.getElementById(id).value=ev.target.result; r.readAsText(f); }; inp.click(); }
+        function clearTextarea(id) { const el = document.getElementById(id); el.value = ''; el.dispatchEvent(new Event('input')); }
+        function saveTextarea(id) { const t=document.getElementById(id).value; if(!t)return; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([t])); a.download='output.txt'; a.click(); }
+        function shuffleAlphabet() { const ta=document.getElementById('protectAlphabet'); let arr=ta.value.split(''); for(let i=arr.length-1;i>0;i--){const r=new Uint32Array(1);crypto.getRandomValues(r);[arr[i],arr[r[0]%(i+1)]]=[arr[r[0]%(i+1)],arr[i]];} ta.value=arr.join(''); startProtectFieldsTimer(); }
+        function restoreAlphabet() { document.getElementById('protectAlphabet').value = DEFAULT_ALPHABET; startProtectFieldsTimer(); }
+
+        // === BINDINGS ===
+        document.getElementById('themeToggleBtn').onclick = toggleTheme;
+        document.getElementById('encryptMsgLoad').onclick = () => loadFileToTextarea('encryptMsg');
+        document.getElementById('encryptMsgPaste').onclick = () => pasteToTextarea('encryptMsg');
+        document.getElementById('encryptMsgCopy').onclick = () => copyFromTextarea('encryptMsg');
+        document.getElementById('encryptMsgClear').onclick = () => clearTextarea('encryptMsg');
+        document.getElementById('encryptResultCopy').onclick = () => copyFromTextarea('encryptResult');
+        document.getElementById('encryptResultSave').onclick = () => saveTextarea('encryptResult');
+        document.getElementById('encryptResultClear').onclick = () => clearTextarea('encryptResult');
+        document.getElementById('decryptCipherLoad').onclick = () => loadFileToTextarea('decryptCipher');
+        document.getElementById('decryptCipherPaste').onclick = () => pasteToTextarea('decryptCipher');
+        document.getElementById('decryptCipherCopy').onclick = () => copyFromTextarea('decryptCipher');
+        document.getElementById('decryptCipherClear').onclick = () => clearTextarea('decryptCipher');
+        document.getElementById('decryptResultCopy').onclick = () => copyFromTextarea('decryptResult');
+        document.getElementById('decryptResultClear').onclick = () => clearTextarea('decryptResult');
+        document.getElementById('protectAlphabetRestore').onclick = restoreAlphabet;
+        document.getElementById('protectAlphabetShuffle').onclick = shuffleAlphabet;
+        document.getElementById('refreshEncryptBooks').onclick = updateBookSelects;
+        document.getElementById('refreshDecryptBooks').onclick = updateBookSelects;
+        document.getElementById('refreshStatsBooks').onclick = updateBookSelects;
+        document.getElementById('refreshProtectBooks').onclick = updateBookSelects;
+        document.getElementById('refreshManageBooks').onclick = () => { updateManageBookSelect(); updateBookSelects(); };
+        document.getElementById('cancelGenBtn').onclick = () => { stopFlag=true; };
+        document.getElementById('cancelEncryptBtn').onclick = () => { stopFlag=true; };
+        document.getElementById('cancelDecryptBtn').onclick = () => { stopFlag=true; };
+        document.getElementById('cancelProtectBtn').onclick = () => { stopFlag=true; };
+        document.getElementById('protectEncryptRadio').onchange = () => { updateProtectBookLabel(); currentProtectBook=null; document.getElementById('protectBookInfo').innerText=''; };
+        document.getElementById('protectDecryptRadio').onchange = () => { updateProtectBookLabel(); currentProtectBook=null; document.getElementById('protectBookInfo').innerText=''; };
+        document.getElementById('closeTimerBtn').onclick = async () => { await encryptAllBooksAndHideBar(false); };
+        document.getElementById('extendConfirmBtn').onclick = confirmExtend;
+        document.getElementById('extendCancelBtn').onclick = () => { document.getElementById('extendPasswordBlock').style.display = 'none'; };
+        document.getElementById('extendPasswordInput').addEventListener('keypress', e => { if(e.key==='Enter') confirmExtend(); });
+        document.getElementById('loadEncryptBook').onclick = async () => { const n=document.getElementById('encryptBookSelect').value; if(!n)return; await loadProtectedBookForUse(n,'encrypt'); };
+        document.getElementById('loadDecryptBook').onclick = async () => { const n=document.getElementById('decryptBookSelect').value; if(!n)return; await loadProtectedBookForUse(n,'decrypt'); };
+        document.getElementById('loadProtectBook').onclick = async () => { const n=document.getElementById('protectBookSelect').value; if(!n)return; currentProtectBook=await loadBook(getProtectFolder(),n); if(currentProtectBook) document.getElementById('protectBookInfo').innerText=`${t('bookLoaded')}: ${currentProtectBook.name}`; };
+
+        // === СЧЁТЧИКИ СИМВОЛОВ ===
+        document.getElementById('encryptMsg').addEventListener('input', function() {
+            document.getElementById('encryptCharCounter').textContent = `${t('symbols')}: ${this.value.length}`;
+        });
+
+        document.getElementById('deleteSelectedBookBtn').onclick = async () => {
+            const sel = document.getElementById('manageBookSelect');
+            const selectedOption = sel.options[sel.selectedIndex];
+            if (!selectedOption) { alert('Выберите книгу для удаления'); return; }
+            const bookName = selectedOption.value;
+            const storeName = selectedOption.getAttribute('data-store');
+            if (!confirm(`Удалить книгу "${bookName}" (${storeName === STORE_NAME ? 'обычная' : 'защищённая'})?`)) return;
+            try {
+                const database = await openDB();
+                const tx = database.transaction([storeName], 'readwrite');
+                tx.objectStore(storeName).delete(bookName);
+                tx.oncomplete = () => { document.getElementById('manageDeleteStatus').innerText = `${t('deletedSelected')} ${bookName}`; updateManageBookSelect(); updateBookSelects(); };
+                tx.onerror = () => alert('Ошибка удаления');
+            } catch(e) { alert('Ошибка: ' + e.message); }
+        };
+
+        document.getElementById('createBookBtn').onclick = async () => {
+            stopFlag=false; const name=document.getElementById('bookName').value.trim()||`book_${Date.now()}`; const useManual=document.getElementById('useManual').checked; let pages,rows,cols,grid,used;
+            if(useManual){let t=document.getElementById('manualBookText').value;if(!t){alert('Введите текст');return;}const c=t.split('');pages=1;rows=1;cols=c.length;grid=[[c]];used=[[new Array(cols).fill(false)]];}
+            else{pages=parseInt(document.getElementById('genPages').value)||1;rows=parseInt(document.getElementById('genRows').value)||1;cols=parseInt(document.getElementById('genCols').value)||1;let cs=getCharsFromSettings();if(!cs){alert('Выберите набор');return;}const cm=document.getElementById('useCrypto').checked;grid=Array(pages).fill().map(()=>Array(rows).fill().map(()=>Array(cols).fill().map(()=>cm?getRandomChar(cs):cs[Math.floor(Math.random()*cs.length)])));used=Array(pages).fill().map(()=>Array(rows).fill().map(()=>new Array(cols).fill(false)));}
+            const book={name,pages,rows,cols,grid,used,available_chars:useManual?document.getElementById('manualBookText').value:getCharsFromSettings()};
+            try{await saveBook(STORE_NAME,book);document.getElementById('genStatus').innerText=`Книга "${name}" ${t('bookCreated')} (${pages*rows*cols} ${t('symbols')})`;updateBookSelects();}catch(e){alert('Ошибка: '+e.message);}
+        };
+        document.getElementById('importBookBtn').onclick=()=>document.getElementById('importBookFileInput').click();
+        document.getElementById('importBookFileInput').onchange=async(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async(ev)=>{try{const book=JSON.parse(ev.target.result);if(!book.name||!book.grid)throw new Error('Формат');await saveBook(STORE_NAME,book);document.getElementById('importExportStatus').innerText=`Импортирована: ${book.name}`;updateBookSelects();}catch(err){alert('Ошибка: '+err.message);}};r.readAsText(f);};
+        document.getElementById('exportBookBtn').onclick=async()=>{
+            const name=document.getElementById('exportBookSelect').value;
+            if(!name){alert('Сначала создайте или импортируйте книгу');return;}
+            const book=await loadBook(STORE_NAME,name);
+            if(!book){alert('Книга не найдена');return;}
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(new Blob([JSON.stringify(book,null,2)],{type:'application/json'}));
+            a.download=`${book.name}.json`;a.click();
+            document.getElementById('importExportStatus').innerText=`Экспортирована: ${book.name}`;
+        };
+
+        document.getElementById('doEncryptBtn').onclick=async()=>{
+            if(!currentEncryptBook){alert('Загрузите книгу');return;}stopFlag=false;let msg=document.getElementById('encryptMsg').value;if(!msg){alert('Пусто');return;}
+            const avSet=new Set(currentEncryptBook.available_chars.split(''));const filtered=filterTextBySet(msg,avSet);const skipped=getSkippedChars(msg,avSet);let w='';if(skipped.length)w=`⚠ Пропущены: ${skipped.join(' ')}`;if(!filtered){alert(`Пусто. ${w}`);return;}if(w&&!confirm(`${w}\n\nПродолжить?`))return;
+            const grid=currentEncryptBook.grid,used=currentEncryptBook.used;let result=[],positions=[];
+            for(let ch of filtered){if(stopFlag){rollbackChanges(grid,used,positions);document.getElementById('encryptStatus').innerText='Отменено';return;}let free=[];for(let p=0;p<grid.length;p++)for(let r=0;r<grid[0].length;r++)for(let c=0;c<grid[0][0].length;c++)if(!used[p][r][c]&&grid[p][r][c]!==null&&grid[p][r][c]===ch)free.push([p,r,c]);if(!free.length){rollbackChanges(grid,used,positions);alert(`Нет позиции для '${ch}'`);return;}const fi=Math.floor(crypto.getRandomValues(new Uint32Array(1))[0]/(0xFFFFFFFF+1)*free.length);const[pp,rr,cc]=free[fi];result.push(`${pp+1}:${rr+1}:${cc+1}`);used[pp][rr][cc]=true;grid[pp][rr][cc]=null;positions.push([pp,rr,cc]);}
+            document.getElementById('encryptResult').value=result.join(', ');document.getElementById('encryptStatus').innerText=`${t('encrypted')} ${filtered.length} ${t('symbols')}${w?'. '+w:''}`;
+            await saveBookImmediately(currentEncryptBook);
+        };
+
+        document.getElementById('doDecryptBtn').onclick=async()=>{
+            if(!currentDecryptBook){alert('Загрузите книгу');return;}const cipher=document.getElementById('decryptCipher').value;if(!cipher){alert('Введите шифр');return;}const coords=[];cipher.split(/[ ,]+/).forEach(t=>{let p=t.split(':');if(p.length===3)coords.push([parseInt(p[0])-1,parseInt(p[1])-1,parseInt(p[2])-1]);});let res='';const grid=currentDecryptBook.grid,used=currentDecryptBook.used;for(let[p,r,c]of coords){if(grid[p]&&grid[p][r]&&grid[p][r][c]!==undefined&&grid[p][r][c]!==null){res+=grid[p][r][c];used[p][r][c]=true;grid[p][r][c]=null;}else res+='?';}
+            document.getElementById('decryptResult').value=res;document.getElementById('decryptStatus').innerText=`${t('decrypted')} ${res.length} ${t('symbols')}`;
+            document.getElementById('decryptCharCounter').textContent = `${t('symbols')}: ${res.length}`;
+            await saveBookImmediately(currentDecryptBook);
+        };
+
+        document.getElementById('execProtect').onclick=async()=>{
+            if(!currentProtectBook){alert('Загрузите книгу');return;}
+            const isEnc=document.getElementById('protectEncryptRadio').checked;
+            const key=document.getElementById('protectKey').value.trim();
+            if(!key){alert('Ключ пуст');return;}
+            const rounds=parseInt(document.getElementById('protectRounds').value)||1;
+            let alphabet=document.getElementById('protectAlphabet').value;
+            alphabet=[...new Set(alphabet.split(''))].join('');
+            if(!alphabet){alert('Алфавит пуст');return;}
+            const chars=currentProtectBook.grid.flat(2);
+            const idxs=chars.map(ch=>alphabet.indexOf(ch)===-1?0:alphabet.indexOf(ch));
+            const keyIdx=key.split('').map(ch=>{const i=alphabet.indexOf(ch);return i===-1?0:i;});
+            let cur=idxs;
+            for(let r=0;r<rounds;r++){
+                if(stopFlag){document.getElementById('protectStatus').innerText='Отменено';return;}
+                let next=[];
+                for(let i=0;i<cur.length;i++)next.push(isEnc?(cur[i]+keyIdx[i%keyIdx.length]+alphabet.length)%alphabet.length:(cur[i]-keyIdx[i%keyIdx.length]+alphabet.length)%alphabet.length);
+                cur=next;
+            }
+            const newChars=cur.map(i=>alphabet[i]);
+            let idx=0;
+            for(let p=0;p<currentProtectBook.grid.length;p++)for(let r=0;r<currentProtectBook.grid[0].length;r++)for(let c=0;c<currentProtectBook.grid[0][0].length;c++)currentProtectBook.grid[p][r][c]=newChars[idx++];
+            if(isEnc){
+                currentProtectBook.name = `${currentProtectBook.name}_protected_${Date.now()}`;
+                await saveBook(PROTECTED_STORE, currentProtectBook);
+                document.getElementById('protectStatus').innerHTML=`Сохранено: ${currentProtectBook.name}`;
+                document.getElementById('protectBookInfo').innerText = `${t('bookLoaded')}: ${currentProtectBook.name}`;
+            }else{
+                currentProtectBook.name = currentProtectBook.name.replace(/_protected_\d+$/,'');
+                await saveBook(STORE_NAME, currentProtectBook);
+                document.getElementById('protectStatus').innerHTML=`Расшифровано: ${currentProtectBook.name}`;
+                document.getElementById('protectBookInfo').innerText = `${t('bookLoaded')}: ${currentProtectBook.name}`;
+            }
+            updateBookSelects();
+        };
+        document.getElementById('exportEncryptedBookBtn').onclick=async()=>{
+            const name = document.getElementById('exportProtectedBookSelect').value;
+            if(!name){alert('Выберите книгу для экспорта');return;}
+            const book = await loadBook(PROTECTED_STORE, name);
+            if(!book){alert('Книга не найдена');return;}
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(new Blob([JSON.stringify(book,null,2)],{type:'application/json'}));
+            a.download=`${book.name}.json`;
+            a.click();
+        };
+        document.getElementById('importProtectedBookBtn').onclick=()=>document.getElementById('importProtectedFileInput').click();
+        document.getElementById('importProtectedFileInput').onchange=async(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async(ev)=>{try{const book=JSON.parse(ev.target.result);if(!book.name||!book.grid)throw new Error('Формат');await saveBook(PROTECTED_STORE,book);alert(`Импортирована: ${book.name}`);updateBookSelects();}catch(err){alert('Ошибка: '+err.message);}};r.readAsText(f);};
+        document.getElementById('deleteAllBooksBtn').onclick=async()=>{if(confirm('ВНИМАНИЕ! Удалить ВСЕ книги?')){await deleteAllBooks();document.getElementById('deleteStatus').innerHTML='Все книги удалены.';setTimeout(()=>location.reload(),1500);}};
+        document.getElementById('showStatsBtn').onclick=async()=>{const n=document.getElementById('statsBookSelect').value;if(!n)return;const book=await loadBook(PROTECTED_STORE,n);if(book){const total=book.pages*book.rows*book.cols;let usedCount=0;for(let p of book.used)for(let r of p)for(let v of r)if(v)usedCount++;document.getElementById('statsOutput').innerText=`Книга: ${book.name}\nСтраниц: ${book.pages}\nСтрок: ${book.rows}\nСимволов в строке: ${book.cols}\nВсего ячеек: ${total}\nИспользовано: ${usedCount}\nСвободно: ${total-usedCount}\nЗаполнено: ${(usedCount/total*100).toFixed(1)}%`;}};
+        const modal=document.getElementById('bookViewModal');document.querySelector('.close-modal').onclick=()=>modal.style.display='none';window.onclick=(e)=>{if(e.target===modal)modal.style.display='none';};
+        document.getElementById('viewFullBookBtn').onclick=async()=>{const n=document.getElementById('statsBookSelect').value;if(!n)return;const book=await loadBook(PROTECTED_STORE,n);if(book){let out='';for(let p=0;p<book.grid.length;p++){out+=`\n${'='.repeat(80)}\nСТРАНИЦА ${p+1}\n${'='.repeat(80)}\n\n`;for(let r=0;r<book.grid[0].length;r++){let line=`Стр.${(r+1).toString().padStart(3)}: `;for(let c=0;c<book.grid[0][0].length;c++)line+=(book.used[p][r][c]||book.grid[p][r][c]===null)?' [_] ':` ${book.grid[p][r][c]} `;out+=line+'\n';}}document.getElementById('modalTitle').innerText=`Просмотр: ${book.name}`;document.getElementById('modalBookContent').innerText=out+'\n[_] - удалено';modal.style.display='block';}};
+        document.getElementById('backupBookBtn').onclick=async()=>{const n=document.getElementById('statsBookSelect').value;if(!n)return;const book=await loadBook(PROTECTED_STORE,n);if(book){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(book,null,2)],{type:'application/json'}));a.download=`${book.name}_backup.json`;a.click();}};
+        document.getElementById('langSelect').onchange=(e)=>{currentLang=e.target.value;updateAllTexts();};
+
+        // === INIT ===
+        initTimerWorker();
+        setupVK();
+        setupRevealButton('encryptRevealBtn', 'encryptMsg');
+        setupRevealButton('decryptRevealBtn', 'decryptResult');
+        updateAllTexts();
+        updateBookSelects();
+        setupProtectFieldsWatchers();
+        startProtectFieldsTimer();
+    })();
+</script>
+</body>
+</html>
